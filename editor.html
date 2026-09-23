@@ -2495,7 +2495,8 @@ var _sbClient = supabase.createClient(
   });
 
   /* ── AI EFFECTS via backend ── */
-  var API_BASE = 'http://localhost:8000';
+  // AI backend URL — set window.AI_BACKEND_URL before this script to enable AI effects
+  var API_BASE = (typeof window.AI_BACKEND_URL !== 'undefined' && window.AI_BACKEND_URL) ? window.AI_BACKEND_URL : null;
   var aiOverlay = document.getElementById('aiOverlay');
   var aiOverlayLabel = document.getElementById('aiOverlayLabel');
 
@@ -2517,6 +2518,12 @@ var _sbClient = supabase.createClient(
     aiOverlay.classList.add('active');
     btn.disabled = true;
 
+    if(!API_BASE){
+      aiOverlay.classList.remove('active');
+      btn.disabled = false;
+      showToast('AI effects need a backend server — coming soon!');
+      return;
+    }
     previewCanvas.toBlob(function(blob){
       var form = new FormData();
       form.append('file', new File([blob], 'canvas.png', {type:'image/png'}));
