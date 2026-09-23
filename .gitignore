@@ -1,0 +1,19 @@
+# Secrets
+backend/.env
+*.env
+
+# Python
+backend/__pycache__/
+backend/**/__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Claude internal
+.claude/
+.agents/
+skills-lock.json
+
+# OS
+.DS_Store
+Thumbs.db

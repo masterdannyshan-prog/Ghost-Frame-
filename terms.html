@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Use — Ghost Frame</title>
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+html,body{
+  width:100%;min-height:100%;
+  background:#000;
+  color:#fff;
+  font-family:'Syne',Arial,sans-serif;
+  color-scheme:dark;
+}
+
+/* ── HEADER ── */
+.header{
+  position:fixed;
+  top:0;left:0;right:0;
+  height:72px;
+  display:flex;
+  align-items:center;
+  padding:0 clamp(20px,4vw,80px);
+  background:rgba(0,0,0,.85);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,.07);
+  z-index:100;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  text-decoration:none;
+  flex-shrink:0;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));
+}
+
+.nav{
+  display:flex;
+  align-items:center;
+  margin-left:clamp(24px,3vw,48px);
+  gap:clamp(24px,2.5vw,40px);
+}
+
+.nav a{
+  font-size:16px;
+  font-weight:400;
+  letter-spacing:-.3px;
+  color:rgba(229,229,230,.75);
+  text-decoration:none;
+  transition:color .2s ease;
+}
+
+.nav a:hover{color:#fff}
+.nav a.active{color:#fff}
+
+.header-right{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.sign-up{
+  height:38px;
+  padding:0 18px;
+  border-radius:7px;
+  background:#fff;
+  color:#101010;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:15px;
+  font-weight:500;
+  letter-spacing:-.3px;
+  border:none;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  transition:opacity .2s ease;
+}
+
+.sign-up:hover{opacity:.88}
+
+/* ── PAGE ── */
+.page{
+  max-width:760px;
+  margin:0 auto;
+  padding:120px clamp(16px,4vw,40px) 100px;
+}
+
+.page-label{
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.35);
+  margin-bottom:20px;
+}
+
+.page-title{
+  font-size:clamp(36px,5vw,60px);
+  font-weight:800;
+  letter-spacing:-.03em;
+  line-height:1.05;
+  color:#fff;
+  margin-bottom:12px;
+}
+
+.page-meta{
+  font-size:14px;
+  color:rgba(255,255,255,.35);
+  margin-bottom:56px;
+  padding-bottom:40px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.section{
+  margin-bottom:48px;
+}
+
+.section-title{
+  font-size:18px;
+  font-weight:700;
+  letter-spacing:-.02em;
+  color:#fff;
+  margin-bottom:14px;
+}
+
+.section p{
+  font-size:15px;
+  font-weight:400;
+  line-height:1.75;
+  color:rgba(255,255,255,.65);
+  margin-bottom:14px;
+}
+
+.section p:last-child{margin-bottom:0}
+
+.section ul{
+  list-style:none;
+  padding:0;
+}
+
+.section ul li{
+  font-size:15px;
+  font-weight:400;
+  line-height:1.75;
+  color:rgba(255,255,255,.65);
+  padding-left:20px;
+  position:relative;
+  margin-bottom:8px;
+}
+
+.section ul li::before{
+  content:'–';
+  position:absolute;
+  left:0;
+  color:rgba(255,255,255,.3);
+}
+
+.divider{
+  height:1px;
+  background:rgba(255,255,255,.07);
+  margin:48px 0;
+}
+
+/* ── FOOTER ── */
+.footer{
+  border-top:1px solid rgba(255,255,255,.07);
+  padding:40px clamp(20px,4vw,80px);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:16px;
+}
+
+.footer-copy{
+  font-size:13px;
+  color:rgba(255,255,255,.3);
+  letter-spacing:-.01em;
+}
+
+.footer-links{
+  display:flex;
+  gap:24px;
+}
+
+.footer-links a{
+  font-size:12px;
+  font-weight:500;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:rgba(255,255,255,.75);
+  text-decoration:none;
+  transition:color .2s ease;
+}
+
+.footer-links a:hover{color:#fff}
+.footer-links a.active{color:#fff}
+
+@media(max-width:639px){
+  .nav{display:none}
+  .footer{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <a href="index.html" class="brand" aria-label="Ghost Frame home">
+    <svg width="28" height="21" viewBox="0 0 32 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M20.6547 0.293C26.7599 0.293 31.7092 5.272 31.7092 11.415V23.708C29.1385 23.708 27.0547 21.611 27.0547 19.025V11.415C27.0547 7.859 24.1893 4.976 20.6547 4.976H17.6285C16.0855 4.976 14.6054 5.593 13.5143 6.69L5.62738 14.626C5.19097 15.065 4.9456 15.66 4.94556 16.281V16.683C4.94556 17.976 5.98754 19.025 7.27283 19.025H17.7456C17.7456 21.53 15.79 23.576 13.3308 23.701L13.091 23.708H7.27283C3.41689 23.708 0.291016 20.563 0.291016 16.683V16.281C0.291052 14.418 1.02659 12.632 2.3359 11.314L10.2234 3.379C12.1874 1.403 14.851 0.293 17.6285 0.293H20.6547Z" fill="white"/>
+      <path d="M21.818 7.316C23.4246 7.316 24.7271 8.627 24.7271 10.243V23.707C22.1564 23.707 20.0725 21.61 20.0725 19.024V12H18.1271L14.3246 15.825C13.779 16.374 13.0391 16.682 12.2676 16.682H7.55035C7.30675 16.682 7.18474 16.386 7.35702 16.213L15.3475 8.174C15.893 7.625 16.6328 7.316 17.4044 7.316H21.818Z" fill="white"/>
+    </svg>
+  </a>
+  <nav class="nav" aria-label="Primary navigation">
+    <a href="index.html">Home</a>
+    <a href="effects.html">Effects</a>
+    <a href="projects.html">Projects</a>
+    <a href="editor.html">Editor</a>
+  </nav>
+  <div class="header-right">
+    <a href="login.html#signup" class="sign-up">Sign Up</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="page-label">Legal</div>
+  <h1 class="page-title">Terms of Use</h1>
+  <p class="page-meta">Last updated: September 2026</p>
+
+  <div class="section">
+    <h2 class="section-title">1. Acceptance of Terms</h2>
+    <p>By accessing or using Ghost Frame ("the Service"), you agree to be bound by these Terms of Use. If you do not agree to these terms, please do not use the Service.</p>
+    <p>Ghost Frame reserves the right to update these terms at any time. Continued use of the Service after changes are posted constitutes your acceptance of the revised terms.</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">2. Use of the Service</h2>
+    <p>Ghost Frame provides browser-based image editing tools for personal and commercial creative use. You agree to use the Service only for lawful purposes and in a manner consistent with these terms.</p>
+    <p>You may not:</p>
+    <ul>
+      <li>Use the Service to process, distribute, or create content that infringes on third-party intellectual property rights</li>
+      <li>Attempt to reverse-engineer, copy, or reproduce the Service's core algorithms or effect implementations</li>
+      <li>Use automated tools to access or scrape the Service without prior written permission</li>
+      <li>Use the Service to generate content that is unlawful, harmful, or offensive</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">3. Your Content</h2>
+    <p>Ghost Frame processes images entirely within your browser. Images you upload are never transmitted to our servers and remain on your device at all times.</p>
+    <p>You retain full ownership of any images you upload and any artwork you create using the Service. By using Ghost Frame, you represent that you have the right to use any images you process through the Service.</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">4. Accounts and Projects</h2>
+    <p>When you create an account, you are responsible for maintaining the security of your credentials and for all activity that occurs under your account.</p>
+    <p>Projects you save to your Ghost Frame account are stored securely. You can delete your account and associated data at any time through your account settings.</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">5. Intellectual Property</h2>
+    <p>The Ghost Frame name, logo, effects, and user interface are the intellectual property of Ghost Frame and are protected by applicable copyright and trademark laws.</p>
+    <p>The visual output you create using Ghost Frame — exported images and artwork — belongs to you. Ghost Frame claims no ownership over your creative output.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <h2 class="section-title">6. Disclaimer of Warranties</h2>
+    <p>The Service is provided "as is" without warranties of any kind, express or implied. Ghost Frame does not warrant that the Service will be uninterrupted, error-free, or free of viruses or other harmful components.</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">7. Limitation of Liability</h2>
+    <p>To the maximum extent permitted by law, Ghost Frame shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the Service.</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">8. Contact</h2>
+    <p>If you have questions about these Terms of Use, you can reach us at <a href="mailto:legal@ghostframe.app" style="color:rgba(255,255,255,.75);text-decoration:underline;text-underline-offset:3px;">legal@ghostframe.app</a>.</p>
+  </div>
+</main>
+
+<footer class="footer">
+  <span class="footer-copy">© 2026 Ghost Frame. All rights reserved.</span>
+  <div class="footer-links">
+    <a href="terms.html" class="active">Terms of Use</a>
+    <a href="privacy.html">Privacy Policy</a>
+  </div>
+</footer>
+
+</body>
+</html>

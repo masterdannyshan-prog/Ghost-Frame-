@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghost Frame — Sign In</title>
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+html,body{
+  width:100%;height:100%;
+  background:#000;
+  color:#fff;
+  font-family:'Syne',Arial,sans-serif;
+  overflow:hidden;
+}
+
+/* ── CANVAS BG ── */
+#dotCanvas{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+}
+
+/* ── VIGNETTE ── */
+.vignette{
+  position:fixed;
+  inset:0;
+  z-index:1;
+  background:radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.15) 70%);
+  pointer-events:none;
+}
+
+/* ── PAGE CENTER ── */
+.page{
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  padding:24px 16px;
+}
+
+/* ── CARD ── */
+.card{
+  width:100%;
+  max-width:400px;
+  background:#0d0d0d;
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:14px;
+  padding:2rem;
+  box-shadow:0 20px 60px rgba(0,0,0,0.8);
+}
+
+/* ── LOGO MARK ── */
+.logo-wrap{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:1.5rem;
+}
+.logo-wrap svg{width:36px;height:27px}
+.logo-name{
+  font-size:1.125rem;
+  font-weight:700;
+  letter-spacing:-0.3px;
+  color:#fff;
+}
+
+/* ── HEADING ── */
+.card-head{
+  text-align:center;
+  margin-bottom:1.5rem;
+}
+.card-head h1{
+  font-size:1.35rem;
+  font-weight:700;
+  letter-spacing:-0.5px;
+  margin-bottom:0.35rem;
+}
+.card-head p{
+  font-size:0.82rem;
+  color:rgba(255,255,255,0.45);
+  line-height:1.5;
+}
+
+/* ── FORM ── */
+.form-group{
+  display:flex;
+  flex-direction:column;
+  gap:0.55rem;
+  margin-bottom:0.75rem;
+}
+.form-input{
+  width:100%;
+  padding:0.65rem 0.85rem;
+  border-radius:7px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.04);
+  color:#fff;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:0.875rem;
+  outline:none;
+  transition:border-color .2s;
+}
+.form-input::placeholder{color:rgba(255,255,255,0.3)}
+.form-input:focus{border-color:rgba(255,255,255,0.35)}
+
+.btn-primary{
+  width:100%;
+  padding:0.68rem;
+  border-radius:7px;
+  border:none;
+  background:#fff;
+  color:#111;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:0.875rem;
+  font-weight:600;
+  cursor:pointer;
+  letter-spacing:-0.2px;
+  transition:background .2s,opacity .2s;
+}
+.btn-primary:hover{opacity:.88}
+
+/* ── DIVIDER ── */
+.divider{
+  display:flex;
+  align-items:center;
+  gap:0.75rem;
+  margin:1rem 0;
+  color:rgba(255,255,255,0.2);
+  font-size:0.75rem;
+}
+.divider::before,.divider::after{
+  content:'';flex:1;
+  height:1px;background:rgba(255,255,255,0.1);
+}
+
+/* ── SOCIAL BUTTONS ── */
+.social-group{
+  display:flex;
+  flex-direction:column;
+  gap:0.45rem;
+}
+.btn-social{
+  width:100%;
+  padding:0.65rem;
+  border-radius:7px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:transparent;
+  color:#fff;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:0.875rem;
+  font-weight:500;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:0.55rem;
+  transition:border-color .2s, background .2s;
+  letter-spacing:-0.1px;
+}
+.btn-social:hover{
+  border-color:rgba(255,255,255,0.28);
+  background:rgba(255,255,255,0.05);
+}
+.btn-social svg{width:15px;height:15px;flex-shrink:0}
+
+/* ── TOGGLE LINK ── */
+.toggle-row{
+  margin-top:1.25rem;
+  text-align:center;
+  font-size:0.82rem;
+  color:rgba(255,255,255,0.45);
+}
+.toggle-row button{
+  color:#fff;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:0.82rem;
+  font-weight:600;
+  background:none;
+  border:none;
+  padding:0;
+  cursor:pointer;
+  text-decoration:underline;
+  text-underline-offset:2px;
+}
+
+/* ── FOOTER NOTE ── */
+.foot-note{
+  margin-top:1rem;
+  font-size:0.72rem;
+  color:rgba(255,255,255,0.25);
+  line-height:1.55;
+  text-align:center;
+}
+.foot-note a{color:rgba(255,255,255,0.4);text-decoration:none}
+.foot-note a:hover{color:rgba(255,255,255,0.6)}
+
+/* ── BACK LINK ── */
+.back-link{
+  margin-top:1.5rem;
+  font-size:0.78rem;
+  color:rgba(255,255,255,0.3);
+  text-decoration:none;
+  display:flex;
+  align-items:center;
+  gap:0.3rem;
+  transition:color .2s;
+}
+.back-link:hover{color:rgba(255,255,255,0.6)}
+
+/* ── PANEL SWITCH ── */
+.panel{display:none}
+.panel.active{display:block}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  html,body{height:auto;overflow-y:auto;overflow-x:hidden}
+  .page{height:auto;min-height:100svh;padding:32px 16px 48px}
+}
+@media(max-width:440px){
+  .card{padding:1.5rem}
+  .card-head h1{font-size:1.2rem}
+}
+</style>
+</head>
+<body>
+
+<canvas id="dotCanvas"></canvas>
+<div class="vignette"></div>
+
+<div class="page">
+  <div class="card">
+
+    <!-- Logo -->
+    <div class="logo-wrap">
+      <svg viewBox="0 0 32 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M20.6547 0.293C26.7599 0.293 31.7092 5.272 31.7092 11.415V23.708C29.1385 23.708 27.0547 21.611 27.0547 19.025V11.415C27.0547 7.859 24.1893 4.976 20.6547 4.976H17.6285C16.0855 4.976 14.6054 5.593 13.5143 6.69L5.62738 14.626C5.19097 15.065 4.9456 15.66 4.94556 16.281V16.683C4.94556 17.976 5.98754 19.025 7.27283 19.025H17.7456C17.7456 21.53 15.79 23.576 13.3308 23.701L13.091 23.708H7.27283C3.41689 23.708 0.291016 20.563 0.291016 16.683V16.281C0.291052 14.418 1.02659 12.632 2.3359 11.314L10.2234 3.379C12.1874 1.403 14.851 0.293 17.6285 0.293H20.6547Z" fill="white"/>
+        <path d="M21.818 7.316C23.4246 7.316 24.7271 8.627 24.7271 10.243V23.707C22.1564 23.707 20.0725 21.61 20.0725 19.024V12H18.1271L14.3246 15.825C13.779 16.374 13.0391 16.682 12.2676 16.682H7.55035C7.30675 16.682 7.18474 16.386 7.35702 16.213L15.3475 8.174C15.893 7.625 16.6328 7.316 17.4044 7.316H21.818Z" fill="white"/>
+      </svg>
+      <span class="logo-name">Ghost Frame</span>
+    </div>
+
+    <!-- Error message -->
+    <div id="authError" style="display:none;margin-bottom:0.75rem;padding:0.6rem 0.85rem;border-radius:7px;background:rgba(255,80,80,0.12);border:1px solid rgba(255,80,80,0.25);color:#ff6b6b;font-size:0.8rem;line-height:1.4;"></div>
+
+    <!-- LOGIN PANEL -->
+    <div class="panel active" id="panelLogin">
+      <div class="card-head">
+        <h1>Sign in</h1>
+        <p>Welcome back. Enter your credentials to continue.</p>
+      </div>
+
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <input class="form-input" type="email" placeholder="name@email.com" autocomplete="email" required>
+          <input class="form-input" type="password" placeholder="Password" autocomplete="current-password" required>
+          <button class="btn-primary" type="submit">Continue with Email</button>
+        </div>
+      </form>
+
+      <div class="toggle-row">
+        No account? <button onclick="showSignup()">Create one</button>
+      </div>
+      <div class="foot-note">
+        By continuing you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+      </div>
+    </div>
+
+    <!-- SIGNUP PANEL -->
+    <div class="panel" id="panelSignup">
+      <div class="card-head">
+        <h1>Create account</h1>
+        <p>Join Ghost Frame. It only takes a moment.</p>
+      </div>
+
+      <form onsubmit="handleSignup(event)">
+        <div class="form-group">
+          <input class="form-input" type="text" placeholder="Full name" autocomplete="name" required>
+          <input class="form-input" type="email" placeholder="name@email.com" autocomplete="email" required>
+          <input class="form-input" type="password" placeholder="Password (min 6 chars)" autocomplete="new-password" required>
+          <button class="btn-primary" type="submit">Sign up with Email</button>
+        </div>
+      </form>
+
+      <div class="toggle-row">
+        Already have an account? <button onclick="showLogin()">Sign in</button>
+      </div>
+      <div class="foot-note">
+        By continuing you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+      </div>
+    </div>
+
+  </div>
+
+  <a class="back-link" href="index.html">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to home
+  </a>
+</div>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ── SUPABASE CLIENT ── */
+const _sb = supabase.createClient(
+  'https://zdtdajlghningkcimeqa.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkdGRhamxnaG5pbmdrY2ltZXFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5ODMwMTgsImV4cCI6MjEwNTU1OTAxOH0._NehgIJkJzIwkYQc5btVyAyOUUjnFIeYfOR1B1prQ_I'
+);
+
+function saveSession(session){
+  try { localStorage.setItem('sb-session', JSON.stringify(session)); } catch(e){}
+}
+
+function showError(msg){
+  var el = document.getElementById('authError');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(function(){ el.style.display='none'; }, 5000);
+}
+
+/* ── AUTH HANDLERS ── */
+async function handleLogin(e){
+  e.preventDefault();
+  var btn = e.target.querySelector('button[type=submit]');
+  btn.textContent = 'Signing in…'; btn.disabled = true;
+  var email = e.target.querySelector('[type=email]').value;
+  var password = e.target.querySelector('[type=password]').value;
+  var { data, error } = await _sb.auth.signInWithPassword({ email, password });
+  if(error){ showError(error.message); btn.textContent='Continue with Email'; btn.disabled=false; return; }
+  saveSession(data.session);
+  window.location.href = 'editor.html';
+}
+
+async function handleSignup(e){
+  e.preventDefault();
+  var btn = e.target.querySelector('button[type=submit]');
+  btn.textContent = 'Creating account…'; btn.disabled = true;
+  var name = e.target.querySelector('[type=text]').value;
+  var email = e.target.querySelector('[type=email]').value;
+  var password = e.target.querySelector('[type=password]').value;
+  if(password.length < 6){ showError('Password must be at least 6 characters'); btn.textContent='Sign up with Email'; btn.disabled=false; return; }
+  var { data, error } = await _sb.auth.signUp({ email, password, options:{ data:{ full_name: name } } });
+  if(error){ showError(error.message); btn.textContent='Sign up with Email'; btn.disabled=false; return; }
+  if(data.session){ saveSession(data.session); window.location.href = 'editor.html'; }
+  else { showError('Check your email to confirm your account, then sign in.'); btn.textContent='Sign up with Email'; btn.disabled=false; }
+}
+
+/* ── PANEL TOGGLE ── */
+function showSignup(){
+  document.getElementById('panelLogin').classList.remove('active');
+  document.getElementById('panelSignup').classList.add('active');
+  document.getElementById('authError').style.display='none';
+}
+function showLogin(){
+  document.getElementById('panelSignup').classList.remove('active');
+  document.getElementById('panelLogin').classList.add('active');
+  document.getElementById('authError').style.display='none';
+}
+if(location.hash === '#signup') showSignup();
+
+/* ── ANIMATED DOT GRID (WebGL) ── */
+(function(){
+  var canvas = document.getElementById('dotCanvas');
+  if(!canvas || !window.THREE) return;
+  var THREE = window.THREE;
+
+  var renderer = new THREE.WebGLRenderer({canvas:canvas, alpha:true, antialias:false});
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+
+  var uniforms = {
+    u_time:       {value:0},
+    u_resolution: {value:new THREE.Vector2(window.innerWidth*2, window.innerHeight*2)},
+    u_opacities:  {value:[0.3,0.3,0.3,0.5,0.5,0.5,0.8,0.8,0.8,1.0]},
+    u_colors:     {value:[
+      new THREE.Vector3(1,1,1),
+      new THREE.Vector3(1,1,1),
+      new THREE.Vector3(1,1,1),
+      new THREE.Vector3(1,1,1),
+      new THREE.Vector3(1,1,1),
+      new THREE.Vector3(1,1,1)
+    ]},
+    u_total_size: {value:20.0},
+    u_dot_size:   {value:5.0}
+  };
+
+  var material = new THREE.ShaderMaterial({
+    vertexShader:`
+      precision mediump float;
+      uniform vec2 u_resolution;
+      out vec2 fragCoord;
+      void main(){
+        gl_Position=vec4(position,1.0);
+        fragCoord=(position.xy+1.0)*0.5*u_resolution;
+        fragCoord.y=u_resolution.y-fragCoord.y;
+      }
+    `,
+    fragmentShader:`
+      precision mediump float;
+      in vec2 fragCoord;
+      uniform float u_time;
+      uniform float u_opacities[10];
+      uniform vec3 u_colors[6];
+      uniform float u_total_size;
+      uniform float u_dot_size;
+      uniform vec2 u_resolution;
+      out vec4 fragColor;
+
+      float PHI=1.61803398874989484820459;
+      float random(vec2 xy){return fract(tan(distance(xy*PHI,xy)*0.5)*xy.x);}
+
+      void main(){
+        vec2 st=fragCoord.xy;
+        st.x-=abs(floor((mod(u_resolution.x,u_total_size)-u_dot_size)*0.5));
+        st.y-=abs(floor((mod(u_resolution.y,u_total_size)-u_dot_size)*0.5));
+
+        float opacity=step(0.0,st.x)*step(0.0,st.y);
+        vec2 st2=vec2(int(st.x/u_total_size),int(st.y/u_total_size));
+
+        float frequency=5.0;
+        float show_offset=random(st2);
+        float rand=random(st2*floor((u_time/frequency)+show_offset+frequency));
+        opacity*=u_opacities[int(rand*10.0)];
+        opacity*=1.0-step(u_dot_size/u_total_size,fract(st.x/u_total_size));
+        opacity*=1.0-step(u_dot_size/u_total_size,fract(st.y/u_total_size));
+
+        vec3 color=u_colors[int(show_offset*6.0)];
+
+        float animation_speed_factor=3.0;
+        vec2 center_grid=u_resolution/2.0/u_total_size;
+        float dist_from_center=distance(center_grid,st2);
+        float timing_offset=dist_from_center*0.01+(random(st2)*0.15);
+        opacity*=step(timing_offset,u_time*animation_speed_factor);
+        opacity*=clamp((1.0-step(timing_offset+0.1,u_time*animation_speed_factor))*1.25,1.0,1.25);
+
+        fragColor=vec4(color,opacity);
+        fragColor.rgb*=fragColor.a;
+      }
+    `,
+    uniforms:uniforms,
+    glslVersion:THREE.GLSL3,
+    blending:THREE.CustomBlending,
+    blendSrc:THREE.SrcAlphaFactor,
+    blendDst:THREE.OneFactor,
+    transparent:true
+  });
+
+  var mesh = new THREE.Mesh(new THREE.PlaneGeometry(2,2), material);
+  scene.add(mesh);
+
+  var start = performance.now();
+  function animate(){
+    requestAnimationFrame(animate);
+    uniforms.u_time.value = (performance.now()-start)/1000;
+    renderer.render(scene,camera);
+  }
+  animate();
+
+  window.addEventListener('resize',function(){
+    renderer.setSize(window.innerWidth,window.innerHeight);
+    uniforms.u_resolution.value.set(window.innerWidth*2,window.innerHeight*2);
+  });
+})();
+</script>
+</body>
+</html>

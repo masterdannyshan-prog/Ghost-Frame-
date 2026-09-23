@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghost Frame — Projects</title>
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:100%;min-height:100%;
+  overflow-x:hidden;
+  background:#000;
+  color-scheme:dark;
+  font-family:'Syne',Arial,sans-serif;
+  color:#F8F5F0;
+}
+
+/* ── HEADER ── */
+.header{
+  position:fixed;
+  top:0;left:0;right:0;
+  height:64px;
+  display:flex;
+  align-items:center;
+  padding:0 clamp(20px,4vw,80px);
+  background:rgba(0,0,0,.85);
+  backdrop-filter:blur(14px) saturate(120%);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  z-index:100;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  text-decoration:none;
+  flex-shrink:0;
+  gap:10px;
+  color:#fff;
+}
+.brand svg{width:28px;height:21px}
+.brand-text{
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:-.3px;
+  color:#F8F5F0;
+}
+
+.nav{
+  display:flex;
+  align-items:center;
+  margin-left:clamp(28px,3vw,48px);
+  gap:clamp(24px,2.5vw,40px);
+}
+.nav a{
+  font-size:15px;
+  font-weight:400;
+  letter-spacing:-.3px;
+  color:rgba(248,245,240,.55);
+  text-decoration:none;
+  transition:color .2s;
+}
+.nav a:hover{color:rgba(248,245,240,.85)}
+.nav a.active{color:#fff}
+.nav a.active::after{
+  content:'';
+  display:block;
+  width:100%;height:2px;
+  background:#fff;
+  border-radius:1px;
+  margin-top:4px;
+}
+
+.header-right{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.btn-signup{
+  height:38px;
+  padding:0 20px;
+  border-radius:7px;
+  background:#fff;
+  color:#101010;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:-.2px;
+  border:none;
+  cursor:pointer;
+}
+
+.menu-toggle{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  width:42px;height:42px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(13,13,13,.9);
+  backdrop-filter:blur(12px);
+  cursor:pointer;
+  margin-left:auto;
+}
+.menu-toggle svg{width:18px;height:14px}
+
+/* ── PROJECTS PAGE ── */
+.projects-page{
+  padding:clamp(100px,14vh,140px) clamp(20px,4vw,80px) clamp(40px,6vh,80px);
+  max-width:1280px;
+  margin:0 auto;
+}
+
+/* Top bar: title + actions */
+.projects-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:clamp(32px,4vh,48px);
+  flex-wrap:wrap;
+  gap:16px;
+}
+.projects-top__left{
+  display:flex;
+  align-items:baseline;
+  gap:14px;
+}
+.projects-top__title{
+  font-size:clamp(24px,2.5vw,36px);
+  font-weight:700;
+  letter-spacing:-.02em;
+  color:#F8F5F0;
+}
+.projects-top__count{
+  font-size:13px;
+  font-weight:600;
+  color:rgba(248,245,240,.25);
+  letter-spacing:.04em;
+}
+.projects-top__actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+/* View toggles */
+.view-toggle{
+  display:flex;
+  gap:2px;
+  background:rgba(255,255,255,.04);
+  border-radius:8px;
+  padding:3px;
+  border:1px solid rgba(255,255,255,.08);
+}
+.view-toggle__btn{
+  width:34px;height:30px;
+  border:none;
+  border-radius:6px;
+  background:transparent;
+  color:rgba(248,245,240,.35);
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .2s,color .2s;
+}
+.view-toggle__btn.active{
+  background:rgba(255,255,255,.1);
+  color:#F8F5F0;
+}
+.view-toggle__btn:hover:not(.active){color:rgba(248,245,240,.6)}
+.view-toggle__btn svg{width:16px;height:16px}
+
+/* Sort dropdown */
+.sort-select{
+  height:34px;
+  padding:0 12px;
+  border-radius:8px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  color:rgba(248,245,240,.55);
+  font-family:'Syne',Arial,sans-serif;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  appearance:none;
+  -webkit-appearance:none;
+  padding-right:30px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='rgba(248,245,240,.4)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+}
+.sort-select option{background:#111;color:#F8F5F0}
+
+/* New project button */
+.btn-new{
+  height:38px;
+  padding:0 18px;
+  border-radius:8px;
+  background:#F8F5F0;
+  color:#101010;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:-.2px;
+  border:none;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  transition:opacity .2s,transform .15s;
+}
+.btn-new:hover{opacity:.9;transform:translateY(-1px)}
+.btn-new svg{width:14px;height:14px}
+
+/* ── PROJECT GRID ── */
+.projects-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:clamp(16px,2vw,24px);
+}
+
+/* ── PROJECT CARD ── */
+.proj-card{
+  position:relative;
+  border-radius:14px;
+  overflow:hidden;
+  background:rgba(255,255,255,.02);
+  border:1px solid rgba(255,255,255,.1);
+  cursor:pointer;
+  transition:border-color .3s,transform .3s,box-shadow .3s;
+}
+.proj-card:hover{
+  border-color:rgba(255,255,255,.2);
+  transform:translateY(-3px);
+  box-shadow:0 12px 40px rgba(0,0,0,.5);
+}
+.proj-card__thumb{
+  aspect-ratio:16/10;
+  overflow:hidden;
+  position:relative;
+  background:#0a0a0a;
+}
+.proj-card__thumb img{
+  width:100%;height:100%;
+  object-fit:cover;
+  transition:transform .4s ease;
+}
+.proj-card:hover .proj-card__thumb img{
+  transform:scale(1.03);
+}
+.proj-card__badge{
+  position:absolute;
+  top:10px;right:10px;
+  font-size:10px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  padding:3px 8px;
+  border-radius:5px;
+  background:rgba(0,0,0,.6);
+  backdrop-filter:blur(8px);
+  color:rgba(248,245,240,.7);
+  border:1px solid rgba(255,255,255,.08);
+}
+.proj-card__info{
+  padding:14px 16px 16px;
+}
+.proj-card__name{
+  font-size:15px;
+  font-weight:600;
+  letter-spacing:-.02em;
+  color:#F8F5F0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.proj-card__meta{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:6px;
+  font-size:12px;
+  color:rgba(248,245,240,.3);
+  font-weight:400;
+}
+.proj-card__dot{
+  width:3px;height:3px;
+  border-radius:50%;
+  background:rgba(248,245,240,.2);
+  flex-shrink:0;
+}
+.proj-card__actions{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px 14px;
+}
+.proj-card__effect{
+  font-size:11px;
+  font-weight:500;
+  color:rgba(248,245,240,.4);
+  padding:3px 8px;
+  border-radius:5px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.06);
+}
+.proj-card__menu{
+  width:28px;height:28px;
+  border:none;
+  border-radius:6px;
+  background:transparent;
+  color:rgba(248,245,240,.3);
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .2s,color .2s;
+}
+.proj-card__menu:hover{
+  background:rgba(255,255,255,.06);
+  color:rgba(248,245,240,.7);
+}
+
+/* ── EMPTY STATE ── */
+.empty-state{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:clamp(80px,12vh,140px) 20px;
+}
+.empty-state__icon{
+  width:72px;height:72px;
+  border-radius:20px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.08);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:24px;
+}
+.empty-state__icon svg{width:28px;height:28px;color:rgba(248,245,240,.25)}
+.empty-state__title{
+  font-size:20px;
+  font-weight:600;
+  letter-spacing:-.02em;
+  color:#F8F5F0;
+  margin-bottom:8px;
+}
+.empty-state__desc{
+  font-size:14px;
+  color:rgba(248,245,240,.4);
+  max-width:340px;
+  line-height:1.5;
+  margin-bottom:28px;
+}
+.empty-state__btn{
+  height:42px;
+  padding:0 24px;
+  border-radius:9px;
+  background:#F8F5F0;
+  color:#101010;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:-.2px;
+  border:none;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  transition:opacity .2s,transform .15s;
+}
+.empty-state__btn:hover{opacity:.9;transform:translateY(-1px)}
+.empty-state__btn svg{width:16px;height:16px}
+
+/* ── FOOTER ── */
+.site-footer{
+  margin-top:clamp(60px,10vh,120px);
+  padding:clamp(40px,6vh,64px) clamp(20px,4vw,80px) clamp(24px,3vh,40px);
+  border-top:1px solid rgba(255,255,255,.06);
+  background:#0d0d0d;
+}
+.footer-inner{
+  max-width:1280px;
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.footer-brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  text-decoration:none;
+  color:rgba(255,255,255,.5);
+}
+.footer-brand svg{width:24px;height:18px}
+.footer-brand span{
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:-.2px;
+}
+.footer-links{
+  display:flex;
+  gap:clamp(16px,2vw,32px);
+}
+.footer-links a{
+  font-size:13px;
+  color:rgba(255,255,255,.35);
+  text-decoration:none;
+  transition:color .2s;
+}
+.footer-links a:hover{color:rgba(255,255,255,.7)}
+.footer-copy{
+  font-size:12px;
+  color:rgba(255,255,255,.2);
+  letter-spacing:.04em;
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .nav{display:none}
+  .menu-toggle{display:flex}
+  .header.menu-open .nav{
+    display:flex;
+    flex-direction:column;
+    position:absolute;
+    top:64px;left:0;right:0;
+    background:rgba(5,5,5,.96);
+    backdrop-filter:blur(20px);
+    padding:20px clamp(20px,4vw,80px);
+    gap:16px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .projects-top{flex-direction:column;align-items:flex-start}
+  .projects-top__actions{width:100%;flex-wrap:wrap}
+  .projects-grid{grid-template-columns:1fr 1fr}
+  .footer-inner{flex-direction:column;gap:20px;text-align:center}
+  .footer-links{flex-wrap:wrap;justify-content:center}
+}
+@media(max-width:480px){
+  .projects-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header" id="header">
+  <a href="index.html" class="brand">
+    <svg viewBox="0 0 32 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20.6547 0.293C26.7599 0.293 31.7092 5.272 31.7092 11.415V23.708C29.1385 23.708 27.0547 21.611 27.0547 19.025V11.415C27.0547 7.859 24.1893 4.976 20.6547 4.976H17.6285C16.0855 4.976 14.6054 5.593 13.5143 6.69L5.62738 14.626C5.19097 15.065 4.9456 15.66 4.94556 16.281V16.683C4.94556 17.976 5.98754 19.025 7.27283 19.025H17.7456C17.7456 21.53 15.79 23.576 13.3308 23.701L13.091 23.708H7.27283C3.41689 23.708 0.291016 20.563 0.291016 16.683V16.281C0.291052 14.418 1.02659 12.632 2.3359 11.314L10.2234 3.379C12.1874 1.403 14.851 0.293 17.6285 0.293H20.6547Z" fill="white"/>
+      <path d="M21.818 7.316C23.4246 7.316 24.7271 8.627 24.7271 10.243V23.707C22.1564 23.707 20.0725 21.61 20.0725 19.024V12H18.1271L14.3246 15.825C13.779 16.374 13.0391 16.682 12.2676 16.682H7.55035C7.30675 16.682 7.18474 16.386 7.35702 16.213L15.3475 8.174C15.893 7.625 16.6328 7.316 17.4044 7.316H21.818Z" fill="white"/>
+    </svg>
+    <span class="brand-text">Ghost Frame</span>
+  </a>
+  <nav class="nav" id="mainNav">
+    <a href="index.html">Home</a>
+    <a href="effects.html">Effects</a>
+    <a href="projects.html" class="active">Projects</a>
+    <a href="editor.html">Editor</a>
+  </nav>
+  <div class="header-right">
+    <button class="btn-signup" type="button">Sign Up</button>
+  </div>
+  <button class="menu-toggle" type="button" aria-label="Toggle menu" onclick="document.getElementById('header').classList.toggle('menu-open')">
+    <svg viewBox="0 0 18 14" fill="none"><rect x="0" y="0" width="18" height="2" rx="1" fill="rgba(255,255,255,.85)"/><rect x="0" y="12" width="18" height="2" rx="1" fill="rgba(255,255,255,.85)"/></svg>
+  </button>
+</header>
+
+<main class="projects-page">
+  <!-- Top bar -->
+  <div class="projects-top">
+    <div class="projects-top__left">
+      <h1 class="projects-top__title">Projects</h1>
+      <span class="projects-top__count">6 projects</span>
+    </div>
+    <div class="projects-top__actions">
+      <div class="view-toggle">
+        <button class="view-toggle__btn active" type="button" aria-label="Grid view" data-view="grid">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+        <button class="view-toggle__btn" type="button" aria-label="List view" data-view="list">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="2.5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="6.75" width="14" height="2.5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="11.5" width="14" height="2.5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+        </button>
+      </div>
+      <select class="sort-select" aria-label="Sort projects">
+        <option>Recent</option>
+        <option>Oldest</option>
+        <option>A — Z</option>
+      </select>
+      <a href="editor.html" class="btn-new">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        New Project
+      </a>
+    </div>
+  </div>
+
+  <!-- Project grid -->
+  <div class="projects-grid" id="projectsGrid">
+    <!-- populated by JS -->
+
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <a href="index.html" class="footer-brand">
+      <svg viewBox="0 0 32 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20.6547 0.293C26.7599 0.293 31.7092 5.272 31.7092 11.415V23.708C29.1385 23.708 27.0547 21.611 27.0547 19.025V11.415C27.0547 7.859 24.1893 4.976 20.6547 4.976H17.6285C16.0855 4.976 14.6054 5.593 13.5143 6.69L5.62738 14.626C5.19097 15.065 4.9456 15.66 4.94556 16.281V16.683C4.94556 17.976 5.98754 19.025 7.27283 19.025H17.7456C17.7456 21.53 15.79 23.576 13.3308 23.701L13.091 23.708H7.27283C3.41689 23.708 0.291016 20.563 0.291016 16.683V16.281C0.291052 14.418 1.02659 12.632 2.3359 11.314L10.2234 3.379C12.1874 1.403 14.851 0.293 17.6285 0.293H20.6547Z" fill="rgba(255,255,255,.5)"/>
+        <path d="M21.818 7.316C23.4246 7.316 24.7271 8.627 24.7271 10.243V23.707C22.1564 23.707 20.0725 21.61 20.0725 19.024V12H18.1271L14.3246 15.825C13.779 16.374 13.0391 16.682 12.2676 16.682H7.55035C7.30675 16.682 7.18474 16.386 7.35702 16.213L15.3475 8.174C15.893 7.625 16.6328 7.316 17.4044 7.316H21.818Z" fill="rgba(255,255,255,.5)"/>
+      </svg>
+      <span>Ghost Frame</span>
+    </a>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="effects.html">Effects</a>
+      <a href="projects.html">Projects</a>
+      <a href="editor.html">Editor</a>
+    </div>
+    <span class="footer-copy">&copy; Ghost Frame 2026</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://zdtdajlghningkcimeqa.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkdGRhamxnaG5pbmdrY2ltZXFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5ODMwMTgsImV4cCI6MjEwNTU1OTAxOH0._NehgIJkJzIwkYQc5btVyAyOUUjnFIeYfOR1B1prQ_I';
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+/* ── VIEW TOGGLE ── */
+const viewBtns = document.querySelectorAll('.view-toggle__btn');
+viewBtns.forEach(function(btn){
+  btn.addEventListener('click', function(){
+    viewBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+/* ── RENDER HELPERS ── */
+const menuSVG = `<svg viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="12" cy="8" r="1.2" fill="currentColor"/></svg>`;
+
+function fmtDate(iso){
+  return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+function renderCard(p){
+  const card = document.createElement('div');
+  card.className = 'proj-card';
+  card.dataset.id = p.id;
+  card.innerHTML = `
+    <div class="proj-card__thumb">
+      <img src="${p.result_url}" alt="${p.title}" onerror="this.style.background='#1a1a1a'">
+      ${p.is_public ? '<span class="proj-card__badge">Public</span>' : ''}
+    </div>
+    <div class="proj-card__info">
+      <div class="proj-card__name">${p.title}</div>
+      <div class="proj-card__meta">
+        <span>${fmtDate(p.created_at)}</span>
+      </div>
+    </div>
+    <div class="proj-card__actions">
+      <span class="proj-card__effect">${p.effect_used || '—'}</span>
+      <button class="proj-card__menu" type="button" aria-label="More options" data-id="${p.id}">${menuSVG}</button>
+    </div>`;
+  card.addEventListener('click', function(e){
+    if(e.target.closest('.proj-card__menu')) return;
+    window.open(p.result_url, '_blank');
+  });
+  card.querySelector('.proj-card__menu').addEventListener('click', function(e){
+    e.stopPropagation();
+    if(confirm('Delete this project?')) deleteProject(p.id, card);
+  });
+  return card;
+}
+
+async function deleteProject(id, cardEl){
+  try {
+    const { error } = await _sb.from('projects').delete().eq('id', id);
+    if(error) throw new Error(error.message);
+    cardEl.remove();
+    if(!document.querySelector('.proj-card')) showEmpty();
+  } catch(e){ alert('Could not delete: ' + e.message); }
+}
+
+function showEmpty(){
+  const grid = document.getElementById('projectsGrid');
+  grid.innerHTML = `
+    <div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-state__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg></div>
+      <div class="empty-state__title">No projects yet</div>
+      <div class="empty-state__desc">Process an image in the editor and save it to see it here.</div>
+      <a class="empty-state__btn" href="editor.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Open Editor
+      </a>
+    </div>`;
+}
+
+function showLogin(){
+  const grid = document.getElementById('projectsGrid');
+  grid.innerHTML = `
+    <div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-state__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="7" r="4"/><path d="M5 20a7 7 0 0114 0"/></svg></div>
+      <div class="empty-state__title">Sign in to see your projects</div>
+      <div class="empty-state__desc">Your saved projects live here. Create an account to start saving.</div>
+      <a class="empty-state__btn" href="login.html">Sign In</a>
+    </div>`;
+}
+
+/* ── LOAD PROJECTS ── */
+async function loadProjects(){
+  const grid = document.getElementById('projectsGrid');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:rgba(255,255,255,.3);font-size:14px;">Loading…</div>';
+
+  /* refresh session from Supabase if needed */
+  try {
+    const raw = localStorage.getItem('sb-session');
+    if(raw){
+      const sess = JSON.parse(raw);
+      const { data } = await _sb.auth.setSession({ access_token: sess.access_token, refresh_token: sess.refresh_token });
+      if(data?.session) localStorage.setItem('sb-session', JSON.stringify(data.session));
+    }
+  } catch(e){}
+
+  const token = (() => { try { return JSON.parse(localStorage.getItem('sb-session'))?.access_token || null; } catch{ return null; }})();
+  if(!token){ showLogin(); return; }
+
+  try {
+    const { data: list, error } = await _sb.from('projects').select('*').order('created_at', { ascending: false });
+    if(error) throw new Error(error.message);
+    grid.innerHTML = '';
+    if(!list || !list.length){ showEmpty(); return; }
+    list.forEach(p => grid.appendChild(renderCard(p)));
+  } catch(e){
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:rgba(255,80,80,.7);font-size:14px;">Failed to load projects: ${e.message}</div>`;
+  }
+}
+
+loadProjects();
+
+/* Close mobile nav on outside click */
+(function(){
+  var header=document.getElementById('header');
+  document.addEventListener('click',function(e){
+    if(header.classList.contains('menu-open')&&!header.contains(e.target)){
+      header.classList.remove('menu-open');
+    }
+  });
+})();
+</script>
+</body>
+</html>

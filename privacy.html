@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Ghost Frame</title>
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+html,body{
+  width:100%;min-height:100%;
+  background:#000;
+  color:#fff;
+  font-family:'Syne',Arial,sans-serif;
+  color-scheme:dark;
+}
+
+/* ── HEADER ── */
+.header{
+  position:fixed;
+  top:0;left:0;right:0;
+  height:72px;
+  display:flex;
+  align-items:center;
+  padding:0 clamp(20px,4vw,80px);
+  background:rgba(0,0,0,.85);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,.07);
+  z-index:100;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  text-decoration:none;
+  flex-shrink:0;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));
+}
+
+.nav{
+  display:flex;
+  align-items:center;
+  margin-left:clamp(24px,3vw,48px);
+  gap:clamp(24px,2.5vw,40px);
+}
+
+.nav a{
+  font-size:16px;
+  font-weight:400;
+  letter-spacing:-.3px;
+  color:rgba(229,229,230,.75);
+  text-decoration:none;
+  transition:color .2s ease;
+}
+
+.nav a:hover{color:#fff}
+.nav a.active{color:#fff}
+
+.header-right{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.sign-up{
+  height:38px;
+  padding:0 18px;
+  border-radius:7px;
+  background:#fff;
+  color:#101010;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:15px;
+  font-weight:500;
+  letter-spacing:-.3px;
+  border:none;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  transition:opacity .2s ease;
+}
+
+.sign-up:hover{opacity:.88}
+
+/* ── PAGE ── */
+.page{
+  max-width:760px;
+  margin:0 auto;
+  padding:120px clamp(16px,4vw,40px) 100px;
+}
+
+.page-label{
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.35);
+  margin-bottom:20px;
+}
+
+.page-title{
+  font-size:clamp(36px,5vw,60px);
+  font-weight:800;
+  letter-spacing:-.03em;
+  line-height:1.05;
+  color:#fff;
+  margin-bottom:12px;
+}
+
+.page-meta{
+  font-size:14px;
+  color:rgba(255,255,255,.35);
+  margin-bottom:56px;
+  padding-bottom:40px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.section{
+  margin-bottom:48px;
+}
+
+.section-title{
+  font-size:18px;
+  font-weight:700;
+  letter-spacing:-.02em;
+  color:#fff;
+  margin-bottom:14px;
+}
+
+.section p{
+  font-size:15px;
+  font-weight:400;
+  line-height:1.75;
+  color:rgba(255,255,255,.65);
+  margin-bottom:14px;
+}
+
+.section p:last-child{margin-bottom:0}
+
+.section ul{
+  list-style:none;
+  padding:0;
+}
+
+.section ul li{
+  font-size:15px;
+  font-weight:400;
+  line-height:1.75;
+  color:rgba(255,255,255,.65);
+  padding-left:20px;
+  position:relative;
+  margin-bottom:8px;
+}
+
+.section ul li::before{
+  content:'–';
+  position:absolute;
+  left:0;
+  color:rgba(255,255,255,.3);
+}
+
+.highlight-box{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;
+  padding:24px 28px;
+  margin-bottom:48px;
+}
+
+.highlight-box p{
+  font-size:15px;
+  font-weight:500;
+  line-height:1.7;
+  color:rgba(255,255,255,.8);
+  margin:0;
+}
+
+.divider{
+  height:1px;
+  background:rgba(255,255,255,.07);
+  margin:48px 0;
+}
+
+/* ── FOOTER ── */
+.footer{
+  border-top:1px solid rgba(255,255,255,.07);
+  padding:40px clamp(20px,4vw,80px);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:16px;
+}
+
+.footer-copy{
+  font-size:13px;
+  color:rgba(255,255,255,.3);
+  letter-spacing:-.01em;
+}
+
+.footer-links{
+  display:flex;
+  gap:24px;
+}
+
+.footer-links a{
+  font-size:12px;
+  font-weight:500;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:rgba(255,255,255,.75);
+  text-decoration:none;
+  transition:color .2s ease;
+}
+
+.footer-links a:hover{color:#fff}
+.footer-links a.active{color:#fff}
+
+@media(max-width:639px){
+  .nav{display:none}
+  .footer{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <a href="index.html" class="brand" aria-label="Ghost Frame home">
+    <svg width="28" height="21" viewBox="0 0 32 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M20.6547 0.293C26.7599 0.293 31.7092 5.272 31.7092 11.415V23.708C29.1385 23.708 27.0547 21.611 27.0547 19.025V11.415C27.0547 7.859 24.1893 4.976 20.6547 4.976H17.6285C16.0855 4.976 14.6054 5.593 13.5143 6.69L5.62738 14.626C5.19097 15.065 4.9456 15.66 4.94556 16.281V16.683C4.94556 17.976 5.98754 19.025 7.27283 19.025H17.7456C17.7456 21.53 15.79 23.576 13.3308 23.701L13.091 23.708H7.27283C3.41689 23.708 0.291016 20.563 0.291016 16.683V16.281C0.291052 14.418 1.02659 12.632 2.3359 11.314L10.2234 3.379C12.1874 1.403 14.851 0.293 17.6285 0.293H20.6547Z" fill="white"/>
+      <path d="M21.818 7.316C23.4246 7.316 24.7271 8.627 24.7271 10.243V23.707C22.1564 23.707 20.0725 21.61 20.0725 19.024V12H18.1271L14.3246 15.825C13.779 16.374 13.0391 16.682 12.2676 16.682H7.55035C7.30675 16.682 7.18474 16.386 7.35702 16.213L15.3475 8.174C15.893 7.625 16.6328 7.316 17.4044 7.316H21.818Z" fill="white"/>
+    </svg>
+  </a>
+  <nav class="nav" aria-label="Primary navigation">
+    <a href="index.html">Home</a>
+    <a href="effects.html">Effects</a>
+    <a href="projects.html">Projects</a>
+    <a href="editor.html">Editor</a>
+  </nav>
+  <div class="header-right">
+    <a href="login.html#signup" class="sign-up">Sign Up</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="page-label">Legal</div>
+  <h1 class="page-title">Privacy Policy</h1>
+  <p class="page-meta">Last updated: September 2026</p>
+
+  <div class="highlight-box">
+    <p>Ghost Frame is built with privacy first. Your images are processed entirely in your browser and never uploaded to our servers. We do not sell your data to third parties.</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">1. Information We Collect</h2>
+    <p>When you create an account, we collect:</p>
+    <ul>
+      <li>Your email address, used to identify your account</li>
+      <li>A password (stored as a secure hash — we never store your plain-text password)</li>
+      <li>Project metadata: names, creation dates, and effect settings you save</li>
+    </ul>
+    <p>We do not collect or store the images you process. Image processing happens entirely within your browser via the Canvas API.</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">2. How We Use Your Information</h2>
+    <p>The information we collect is used to:</p>
+    <ul>
+      <li>Authenticate your account and maintain your session</li>
+      <li>Save and sync your projects across devices</li>
+      <li>Send transactional emails (password resets, account changes)</li>
+      <li>Improve the Service based on aggregate, anonymized usage patterns</li>
+    </ul>
+    <p>We do not use your information for advertising or sell it to third parties.</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">3. Your Images</h2>
+    <p>Ghost Frame processes images entirely client-side. When you upload an image to the editor, it is loaded into your browser's memory and never transmitted to Ghost Frame's servers.</p>
+    <p>Exported images are downloaded directly to your device. We do not receive, store, or have access to any images you create or export.</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">4. Data Storage and Security</h2>
+    <p>Account data is stored securely using Supabase, which provides encryption at rest and in transit. We follow industry-standard security practices to protect your information.</p>
+    <p>You can delete your account and all associated data at any time. Deletion is permanent and cannot be undone.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <h2 class="section-title">5. Cookies and Local Storage</h2>
+    <p>Ghost Frame uses browser local storage to maintain your session and remember editor preferences (such as last-used effect and settings). No tracking cookies or third-party analytics cookies are used.</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">6. Third-Party Services</h2>
+    <p>Ghost Frame uses the following third-party services:</p>
+    <ul>
+      <li><strong style="color:rgba(255,255,255,.85)">Supabase</strong> — database and authentication provider</li>
+    </ul>
+    <p>These services have their own privacy policies and handle data according to their own terms. We only share the minimum data necessary to operate these services.</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">7. Your Rights</h2>
+    <p>You have the right to:</p>
+    <ul>
+      <li>Access the personal data we hold about you</li>
+      <li>Correct inaccurate data</li>
+      <li>Request deletion of your account and data</li>
+      <li>Export your project data</li>
+    </ul>
+    <p>To exercise any of these rights, contact us at the address below.</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">8. Contact</h2>
+    <p>If you have questions about this Privacy Policy, contact us at <a href="mailto:privacy@ghostframe.app" style="color:rgba(255,255,255,.75);text-decoration:underline;text-underline-offset:3px;">privacy@ghostframe.app</a>.</p>
+  </div>
+</main>
+
+<footer class="footer">
+  <span class="footer-copy">© 2026 Ghost Frame. All rights reserved.</span>
+  <div class="footer-links">
+    <a href="terms.html">Terms of Use</a>
+    <a href="privacy.html" class="active">Privacy Policy</a>
+  </div>
+</footer>
+
+</body>
+</html>

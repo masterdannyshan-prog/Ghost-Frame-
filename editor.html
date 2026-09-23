@@ -1,0 +1,3076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghost Frame — Editor</title>
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:100%;height:100%;
+  overflow:hidden;
+  background:#000;
+  color-scheme:dark;
+  font-family:'Syne',Arial,sans-serif;
+  color:#fff;
+}
+
+/* ── TOP BAR ── */
+.topbar{
+  position:fixed;
+  top:0;left:0;right:0;
+  height:56px;
+  display:flex;
+  align-items:center;
+  padding:0 20px;
+  background:rgba(0,0,0,.85);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  z-index:100;
+  gap:16px;
+}
+
+.topbar__logo{
+  display:flex;
+  align-items:center;
+  text-decoration:none;
+  flex-shrink:0;
+  gap:10px;
+  color:#fff;
+}
+
+.topbar__logo svg{
+  width:28px;
+  height:21px;
+}
+
+.topbar__logo-text{
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:-0.03em;
+  color:rgba(255,255,255,.85);
+}
+
+.topbar__sep{
+  width:1px;
+  height:24px;
+  background:rgba(255,255,255,.1);
+  flex-shrink:0;
+}
+
+.topbar__filename{
+  font-size:13px;
+  font-weight:400;
+  color:rgba(255,255,255,.45);
+  letter-spacing:-0.01em;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.topbar__spacer{flex:1}
+
+.topbar__btn{
+  height:34px;
+  padding:0 16px;
+  border-radius:7px;
+  border:1px solid rgba(255,255,255,.12);
+  background:transparent;
+  color:rgba(255,255,255,.65);
+  font-family:'Syne',Arial,sans-serif;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:border-color .25s,color .25s;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+
+.topbar__btn:hover{
+  border-color:rgba(255,255,255,.3);
+  color:rgba(255,255,255,.9);
+}
+
+.topbar__btn:focus-visible{
+  outline:2px solid rgba(255,160,40,.5);
+  outline-offset:2px;
+}
+
+.topbar__btn--primary{
+  background:#fff;
+  color:#111;
+  border:none;
+  box-shadow:0 1px 5px rgba(0,0,0,.38);
+  font-weight:600;
+}
+
+.topbar__btn--primary:hover{
+  background:#f0f0f0;
+  color:#000;
+}
+
+.topbar__btn--help{
+  width:34px;
+  height:34px;
+  padding:0;
+  border-radius:50%;
+  justify-content:center;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:0;
+  text-transform:none;
+  position:relative;
+}
+
+.help-dropdown{
+  position:absolute;
+  top:calc(100% + 8px);
+  right:0;
+  min-width:200px;
+  background:#161616;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;
+  padding:6px;
+  display:none;
+  z-index:200;
+}
+
+.help-dropdown.open{
+  display:block;
+}
+
+.help-dropdown__item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 14px;
+  border:none;
+  background:none;
+  color:rgba(255,255,255,.7);
+  font-family:'Syne',Arial,sans-serif;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  border-radius:7px;
+  width:100%;
+  text-align:left;
+  transition:background .15s,color .15s;
+}
+
+.help-dropdown__item:hover{
+  background:rgba(255,255,255,.06);
+  color:#fff;
+}
+
+.help-dropdown__item svg{flex-shrink:0;opacity:.5}
+
+/* ── MAIN LAYOUT ── */
+.editor-layout{
+  display:flex;
+  height:100vh;
+  padding-top:56px;
+}
+
+/* ── CANVAS AREA ── */
+.canvas-area{
+  flex:1;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#000;
+  overflow:hidden;
+  min-width:0;
+}
+
+.canvas-area__drop{
+  position:absolute;
+  inset:24px;
+  border:2px dashed rgba(255,255,255,.1);
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  transition:border-color .3s,background .3s;
+}
+
+.canvas-area__drop:hover{
+  border-color:rgba(255,255,255,.2);
+  background:rgba(255,255,255,.02);
+}
+
+.canvas-area__drop.dragover{
+  border-color:rgba(255,160,40,.5);
+  background:rgba(255,160,40,.03);
+}
+
+.canvas-area__drop-icon{
+  width:72px;
+  height:72px;
+  border-radius:18px;
+  background:rgba(255,255,255,.04);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.canvas-area__drop-icon svg{
+  opacity:.35;
+}
+
+.canvas-area__drop-title{
+  font-size:20px;
+  font-weight:600;
+  color:rgba(255,255,255,.6);
+  letter-spacing:-0.02em;
+}
+
+.canvas-area__drop-sub{
+  font-size:13px;
+  font-weight:400;
+  color:rgba(255,255,255,.25);
+}
+
+.canvas-area__drop-actions{
+  display:flex;
+  gap:12px;
+  margin-top:8px;
+  align-items:center;
+  position:relative;
+  z-index:3;
+}
+
+.drop-btn-primary{
+  height:40px;
+  padding:0 24px;
+  border-radius:7px;
+  border:none;
+  background:#fff;
+  color:#111;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:0 1px 5px rgba(0,0,0,.38);
+  transition:background .2s;
+}
+
+.drop-btn-primary:hover{background:#f0f0f0}
+.drop-btn-primary:focus-visible{outline:2px solid rgba(255,160,40,.5);outline-offset:2px}
+
+.drop-btn-secondary{
+  height:40px;
+  padding:0 16px;
+  border-radius:7px;
+  border:1px solid rgba(255,255,255,.1);
+  background:transparent;
+  color:rgba(255,255,255,.5);
+  font-family:'Syne',Arial,sans-serif;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition:border-color .25s,color .25s;
+}
+
+.drop-btn-secondary:hover{
+  border-color:rgba(255,160,40,.4);
+  color:rgba(255,160,40,.9);
+}
+
+.drop-btn-secondary:focus-visible{outline:2px solid rgba(255,160,40,.5);outline-offset:2px}
+
+.canvas-area__drop input[type="file"]{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+  z-index:2;
+}
+
+.canvas-wrap{
+  position:relative;
+  display:none;
+  max-width:calc(100% - 48px);
+  max-height:calc(100% - 48px);
+}
+
+.canvas-wrap.active{display:block}
+
+.canvas-wrap canvas{
+  display:block;
+  max-width:100%;
+  max-height:calc(100vh - 56px - 44px - 48px);
+  border-radius:4px;
+  box-shadow:0 8px 40px rgba(0,0,0,.6);
+}
+
+.canvas-toggle{
+  position:absolute;
+  bottom:12px;
+  left:12px;
+  height:28px;
+  padding:0 10px;
+  border-radius:7px;
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(0,0,0,.7);
+  backdrop-filter:blur(8px);
+  color:rgba(255,255,255,.7);
+  font-family:'Syne',Arial,sans-serif;
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:0.03em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:border-color .25s,color .25s;
+}
+
+.canvas-toggle:hover{
+  border-color:rgba(255,255,255,.3);
+  color:#fff;
+}
+
+/* ── BOTTOM BAR ── */
+.bottombar{
+  position:fixed;
+  bottom:0;left:0;
+  right:340px;
+  height:36px;
+  display:flex;
+  align-items:center;
+  padding:0 20px;
+  background:rgba(0,0,0,.85);
+  backdrop-filter:blur(8px);
+  border-top:1px solid rgba(255,255,255,.06);
+  gap:20px;
+  z-index:90;
+}
+
+.bottombar__item{
+  font-size:11px;
+  font-weight:400;
+  color:rgba(255,255,255,.3);
+  letter-spacing:0.02em;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.bottombar__item span{
+  color:rgba(255,255,255,.55);
+}
+
+.bottombar__dot{
+  width:6px;height:6px;
+  border-radius:50%;
+  background:#2ecc71;
+  opacity:.6;
+}
+
+.bottombar__spacer{flex:1}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:340px;
+  flex-shrink:0;
+  height:calc(100vh - 56px);
+  overflow-y:auto;
+  background:#0a0a0a;
+  border-left:1px solid rgba(255,255,255,.06);
+  padding:24px 20px 40px;
+  display:flex;
+  flex-direction:column;
+  gap:28px;
+}
+
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-track{background:transparent}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
+
+.sb-section{}
+
+.sb-label{
+  font-size:12px;
+  font-weight:700;
+  color:#fff;
+  text-transform:uppercase;
+  letter-spacing:0.14em;
+  margin-bottom:14px;
+}
+
+/* Source upload (sidebar) */
+.sb-upload{
+  position:relative;
+  border:1px dashed rgba(255,255,255,.1);
+  border-radius:7px;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
+  transition:border-color .25s,background .25s;
+}
+
+.sb-upload:hover{
+  border-color:rgba(255,255,255,.2);
+  background:rgba(255,255,255,.02);
+}
+
+.sb-upload__text{
+  font-size:13px;
+  font-weight:500;
+  color:rgba(255,255,255,.5);
+}
+
+.sb-upload__sub{
+  font-size:11px;
+  color:rgba(255,255,255,.2);
+}
+
+.sb-upload input[type="file"]{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+}
+
+/* Image info row */
+.sb-img-info{
+  display:none;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  background:rgba(255,255,255,.03);
+  border-radius:7px;
+  border:1px solid rgba(255,255,255,.06);
+}
+
+.sb-img-info.active{display:flex}
+
+.sb-img-info__thumb{
+  width:40px;height:40px;
+  border-radius:5px;
+  object-fit:cover;
+  flex-shrink:0;
+}
+
+.sb-img-info__meta{
+  min-width:0;
+  flex:1;
+}
+
+.sb-img-info__name{
+  font-size:12px;
+  font-weight:500;
+  color:rgba(255,255,255,.7);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.sb-img-info__dims{
+  font-size:11px;
+  color:rgba(255,255,255,.3);
+  margin-top:2px;
+}
+
+.sb-img-info__remove{
+  width:28px;height:28px;
+  border-radius:5px;
+  border:none;
+  background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.4);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .2s,color .2s;
+  flex-shrink:0;
+}
+
+.sb-img-info__remove:hover{
+  background:rgba(255,100,100,.12);
+  color:rgba(255,100,100,.8);
+}
+
+/* Effects search */
+.fx-search-wrap{
+  position:relative;
+  margin-bottom:10px;
+}
+.fx-search{
+  width:100%;
+  height:38px;
+  border-radius:7px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.03);
+  color:#F8F5F0;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:13px;
+  font-weight:400;
+  padding:0 10px 0 34px;
+  outline:none;
+  transition:border-color .25s;
+}
+.fx-search::placeholder{color:rgba(255,255,255,.25)}
+.fx-search:focus{border-color:rgba(255,160,40,.4)}
+.fx-search-icon{
+  position:absolute;
+  left:10px;top:50%;
+  transform:translateY(-50%);
+  width:16px;height:16px;
+  color:rgba(255,255,255,.25);
+  pointer-events:none;
+}
+.fx-search-count{
+  font-size:11px;
+  font-weight:500;
+  color:rgba(255,255,255,.25);
+  text-align:right;
+  margin-bottom:6px;
+  letter-spacing:.03em;
+}
+
+/* Effects categories */
+.fx-categories{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.fx-category__header{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  width:100%;
+  background:none;
+  border:none;
+  padding:8px 0;
+  cursor:pointer;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:12px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:1.2px;
+  color:rgba(255,255,255,.45);
+  transition:color .2s;
+}
+.fx-category__header:hover{color:rgba(255,255,255,.65)}
+.fx-category__count{
+  font-weight:400;
+  color:rgba(255,255,255,.25);
+  margin-left:auto;
+  letter-spacing:0;
+  text-transform:none;
+  font-size:12px;
+}
+
+.fx-category__arrow{
+  font-size:11px;
+  transition:transform .2s;
+  display:inline-block;
+}
+.fx-category.collapsed .fx-category__arrow{transform:rotate(-90deg)}
+.fx-category.collapsed .fx-category__grid{display:none}
+.fx-category.fx-hidden{display:none}
+
+.fx-category__grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  padding-bottom:4px;
+}
+.fx-btn.fx-hidden{display:none}
+
+.fx-btn{
+  height:40px;
+  border-radius:7px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.03);
+  color:rgba(255,255,255,.55);
+  font-family:'Syne',Arial,sans-serif;
+  font-size:13px;
+  font-weight:500;
+  letter-spacing:-0.01em;
+  cursor:pointer;
+  transition:border-color .25s,background .25s,color .25s,transform .12s;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  padding:0 10px;
+}
+
+.fx-btn:hover{
+  border-color:rgba(255,160,40,.5);
+  background:rgba(255,160,40,.06);
+  color:rgb(255,160,40);
+}
+
+.fx-btn:active{
+  transform:scale(0.96);
+}
+
+.fx-btn.active{
+  border-color:rgba(255,160,40,.6);
+  background:rgba(255,160,40,.1);
+  color:rgb(255,180,60);
+}
+
+.fx-btn:focus-visible{
+  outline:2px solid rgba(255,160,40,.5);
+  outline-offset:2px;
+}
+
+.fx-btn:last-child:nth-child(odd){
+  grid-column:1/-1;
+}
+
+/* Sliders */
+.sb-slider-row{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.sb-slider-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.sb-slider-name{
+  font-size:12px;
+  font-weight:500;
+  color:rgba(255,255,255,.55);
+}
+
+.sb-slider-val{
+  font-size:12px;
+  font-weight:600;
+  color:rgba(255,255,255,.75);
+  min-width:30px;
+  text-align:right;
+}
+
+input[type="range"]{
+  -webkit-appearance:none;
+  appearance:none;
+  width:100%;
+  height:4px;
+  border-radius:2px;
+  background:rgba(255,255,255,.08);
+  outline:none;
+  cursor:pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:14px;height:14px;
+  border-radius:50%;
+  background:#fff;
+  border:none;
+  box-shadow:0 1px 4px rgba(0,0,0,.4);
+  cursor:pointer;
+  transition:box-shadow .2s;
+}
+
+input[type="range"]:active::-webkit-slider-thumb{
+  box-shadow:0 0 0 4px rgba(255,160,40,.25),0 1px 4px rgba(0,0,0,.4);
+}
+
+input[type="range"]::-moz-range-thumb{
+  width:14px;height:14px;
+  border-radius:50%;
+  background:#fff;
+  border:none;
+  box-shadow:0 1px 4px rgba(0,0,0,.4);
+  cursor:pointer;
+}
+
+input[type="range"]:focus-visible{
+  outline:2px solid rgba(255,160,40,.5);
+  outline-offset:2px;
+}
+
+/* Presets */
+.preset-row{
+  display:flex;
+  gap:6px;
+}
+
+.preset-btn{
+  flex:1;
+  height:34px;
+  border-radius:7px;
+  border:1px solid rgba(255,255,255,.08);
+  background:transparent;
+  color:rgba(255,255,255,.45);
+  font-family:'Syne',Arial,sans-serif;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:0.03em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:border-color .25s,color .25s,background .25s;
+}
+
+.preset-btn:hover{
+  border-color:rgba(255,160,40,.35);
+  color:rgba(255,160,40,.85);
+}
+
+.preset-btn.active{
+  border-color:rgba(255,160,40,.4);
+  background:rgba(255,160,40,.08);
+  color:rgb(255,180,60);
+}
+
+.preset-btn:focus-visible{
+  outline:2px solid rgba(255,160,40,.5);
+  outline-offset:2px;
+}
+
+/* Export section */
+.sb-export-info{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-bottom:12px;
+}
+
+.sb-export-row{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+}
+
+.sb-export-row .ek{color:rgba(255,255,255,.35)}
+.sb-export-row .ev{color:rgba(255,255,255,.65)}
+
+.sb-export-btn{
+  width:100%;
+  height:44px;
+  border-radius:7px;
+  border:none;
+  background:#fff;
+  color:#111;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:-0.02em;
+  cursor:pointer;
+  box-shadow:0 1px 5px rgba(0,0,0,.38);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  transition:background .2s;
+}
+
+.sb-export-btn:hover{background:#f0f0f0}
+
+.sb-export-btn:disabled{
+  opacity:.35;
+  cursor:not-allowed;
+}
+
+.sb-export-btn:focus-visible{
+  outline:2px solid rgba(255,160,40,.5);
+  outline-offset:2px;
+}
+
+/* Divider */
+.sb-divider{
+  height:1px;
+  background:rgba(255,255,255,.06);
+  margin:4px 0;
+}
+
+/* ── TOAST SYSTEM ── */
+.toast-container{
+  position:fixed;
+  bottom:56px;
+  left:50%;
+  transform:translateX(calc(-50% - 170px));
+  z-index:500;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  pointer-events:none;
+}
+
+.toast{
+  padding:10px 20px;
+  background:#161616;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:8px;
+  font-size:13px;
+  font-weight:500;
+  color:rgba(255,255,255,.8);
+  opacity:0;
+  transform:translateY(12px);
+  transition:opacity .3s,transform .3s;
+  pointer-events:auto;
+  white-space:nowrap;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.toast.hide{
+  opacity:0;
+  transform:translateY(-8px);
+}
+
+/* ── TOUR SYSTEM ── */
+.tour-overlay{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .35s;
+}
+
+.tour-overlay.active{
+  pointer-events:auto;
+  opacity:1;
+}
+
+.tour-backdrop{
+  position:fixed;
+  inset:0;
+  background:transparent;
+  z-index:1001;
+}
+
+.tour-highlight{
+  position:fixed;
+  z-index:1002;
+  border-radius:10px;
+  box-shadow:0 0 0 9999px rgba(0,0,0,.35);
+  transition:top .4s cubic-bezier(.16,1,.3,1),left .4s cubic-bezier(.16,1,.3,1),width .4s cubic-bezier(.16,1,.3,1),height .4s cubic-bezier(.16,1,.3,1);
+  pointer-events:none;
+}
+
+.tour-tooltip{
+  position:fixed;
+  z-index:1003;
+  width:320px;
+  background:#161616;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;
+  padding:0;
+  overflow:hidden;
+  opacity:0;
+  transform:translateY(8px);
+  transition:opacity .3s .1s,transform .3s .1s;
+}
+
+.tour-overlay.active .tour-tooltip{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.tour-tooltip__accent{
+  display:none;
+}
+
+.tour-tooltip__body{
+  padding:20px 24px 16px;
+}
+
+.tour-tooltip__step{
+  font-size:11px;
+  font-weight:600;
+  color:rgba(255,255,255,.3);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin-bottom:10px;
+}
+
+.tour-tooltip__title{
+  font-size:16px;
+  font-weight:700;
+  color:#fff;
+  letter-spacing:-0.02em;
+  margin-bottom:8px;
+}
+
+.tour-tooltip__desc{
+  font-size:13px;
+  font-weight:400;
+  color:rgba(255,255,255,.55);
+  line-height:1.5;
+}
+
+.tour-tooltip__nav{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:12px 24px 16px;
+}
+
+.tour-btn{
+  height:34px;
+  padding:0 16px;
+  border-radius:7px;
+  border:none;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  transition:background .2s,color .2s;
+}
+
+.tour-btn--next{
+  background:#fff;
+  color:#111;
+  box-shadow:0 1px 4px rgba(0,0,0,.3);
+}
+
+.tour-btn--next:hover{background:#f0f0f0}
+
+.tour-btn--back{
+  background:transparent;
+  color:rgba(255,255,255,.5);
+  border:1px solid rgba(255,255,255,.1);
+}
+
+.tour-btn--back:hover{
+  border-color:rgba(255,255,255,.2);
+  color:rgba(255,255,255,.8);
+}
+
+.tour-btn--skip{
+  background:none;
+  color:rgba(255,255,255,.3);
+  font-weight:500;
+  margin-left:auto;
+  padding:0 8px;
+}
+
+.tour-btn--skip:hover{color:rgba(255,255,255,.6)}
+
+.tour-btn:focus-visible{outline:2px solid rgba(255,160,40,.5);outline-offset:2px}
+
+/* Welcome modal */
+.tour-welcome{
+  position:fixed;
+  z-index:1003;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:420px;
+  max-width:calc(100vw - 40px);
+  background:#111;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:48px 40px 36px;
+  text-align:center;
+  display:none;
+}
+
+.tour-welcome.active{display:block}
+
+.tour-welcome__logo{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:28px;
+}
+
+.tour-welcome__logo svg{width:36px;height:27px}
+
+.tour-welcome__logo-text{
+  font-size:18px;
+  font-weight:700;
+  letter-spacing:-0.03em;
+}
+
+.tour-welcome__title{
+  font-size:24px;
+  font-weight:800;
+  letter-spacing:-0.03em;
+  margin-bottom:12px;
+}
+
+.tour-welcome__desc{
+  font-size:14px;
+  font-weight:400;
+  color:rgba(255,255,255,.5);
+  line-height:1.55;
+  margin-bottom:32px;
+}
+
+.tour-welcome__start{
+  display:block;
+  width:100%;
+  height:48px;
+  border-radius:8px;
+  border:none;
+  background:#fff;
+  color:#111;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+  transition:background .2s;
+  margin-bottom:16px;
+}
+
+.tour-welcome__start:hover{background:#f0f0f0}
+
+.tour-welcome__skip{
+  display:inline-block;
+  border:none;
+  background:none;
+  color:rgba(255,255,255,.35);
+  font-family:'Syne',Arial,sans-serif;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition:color .2s;
+}
+
+.tour-welcome__skip:hover{color:rgba(255,255,255,.6)}
+
+.tour-welcome__close{
+  position:absolute;
+  top:16px;right:16px;
+  width:32px;height:32px;
+  border:none;
+  background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.4);
+  border-radius:8px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .2s,color .2s;
+}
+
+.tour-welcome__close:hover{
+  background:rgba(255,255,255,.1);
+  color:rgba(255,255,255,.8);
+}
+
+/* ── RESPONSIVE ── */
+/* ── SIDEBAR BACKDROP (tap to close on mobile) ── */
+.sidebar-backdrop{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:94;
+  background:rgba(0,0,0,.5);
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+}
+
+@media(max-width:860px){
+  /* Stack layout: canvas on top, controls scroll below */
+  html,body{overflow:auto}
+  .editor-layout{
+    flex-direction:column;
+    height:auto;
+    min-height:100svh;
+    overflow-x:hidden;
+  }
+  .canvas-area{
+    flex:none;
+    height:55svh;
+    min-height:260px;
+  }
+  /* Sidebar flows below canvas as a normal block */
+  .sidebar{
+    position:static;
+    width:100%;
+    height:auto;
+    transform:none !important;
+    transition:none !important;
+    border-top:1px solid rgba(255,255,255,.07);
+    padding:20px 16px 100px;
+    overflow:visible;
+    gap:20px;
+  }
+  /* No need for drawer toggle or backdrop */
+  .topbar__toggle-sidebar{display:none !important}
+  .sidebar-backdrop{display:none !important}
+  .bottombar{right:0}
+  .toast-container{transform:translateX(-50%)}
+  .tour-tooltip{width:280px}
+}
+
+@media(min-width:861px){
+  .topbar__toggle-sidebar{display:none}
+}
+
+@media(max-width:480px){
+  .sidebar{width:100%}
+  .topbar{padding:0 12px;gap:8px}
+  .topbar__logo-text{display:none}
+  #btnReset{display:none}
+  #btnSaveProject,#btnExportTop{padding:0 10px;font-size:11px}
+  .canvas-area__drop-title{font-size:16px}
+  .tour-tooltip{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    top:auto;
+    width:100%;
+    border-radius:16px 16px 0 0;
+    transform:translateY(100%);
+  }
+  .tour-overlay.active .tour-tooltip{
+    transform:translateY(0);
+  }
+  .canvas-area__drop-actions{flex-direction:column}
+}
+
+/* ── AI PROCESSING STATE ── */
+.ai-processing-overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(4px);
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  z-index:50;
+  border-radius:4px;
+}
+.ai-processing-overlay.active{display:flex}
+.ai-proc-spinner{
+  width:36px;height:36px;
+  border:3px solid rgba(255,255,255,.12);
+  border-top-color:rgba(255,255,255,.8);
+  border-radius:50%;
+  animation:ai-spin .7s linear infinite;
+}
+@keyframes ai-spin{to{transform:rotate(360deg)}}
+.ai-proc-label{
+  font-size:13px;
+  font-weight:500;
+  color:rgba(255,255,255,.65);
+  letter-spacing:.02em;
+}
+
+/* ── HIDDEN UTILITY ── */
+.hidden{display:none!important}
+
+/* ── REDUCED MOTION ── */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    transition-duration:0.01ms!important;
+    animation-duration:0.01ms!important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ── TOP BAR ── -->
+<header class="topbar">
+  <a href="index.html" class="topbar__logo">
+    <svg viewBox="0 0 32 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20.6547 0.293C26.7599 0.293 31.7092 5.272 31.7092 11.415V23.708C29.1385 23.708 27.0547 21.611 27.0547 19.025V11.415C27.0547 7.859 24.1893 4.976 20.6547 4.976H17.6285C16.0855 4.976 14.6054 5.593 13.5143 6.69L5.62738 14.626C5.19097 15.065 4.9456 15.66 4.94556 16.281V16.683C4.94556 17.976 5.98754 19.025 7.27283 19.025H17.7456C17.7456 21.53 15.79 23.576 13.3308 23.701L13.091 23.708H7.27283C3.41689 23.708 0.291016 20.563 0.291016 16.683V16.281C0.291052 14.418 1.02659 12.632 2.3359 11.314L10.2234 3.379C12.1874 1.403 14.851 0.293 17.6285 0.293H20.6547Z" fill="white"/>
+      <path d="M21.818 7.316C23.4246 7.316 24.7271 8.627 24.7271 10.243V23.707C22.1564 23.707 20.0725 21.61 20.0725 19.024V12H18.1271L14.3246 15.825C13.779 16.374 13.0391 16.682 12.2676 16.682H7.55035C7.30675 16.682 7.18474 16.386 7.35702 16.213L15.3475 8.174C15.893 7.625 16.6328 7.316 17.4044 7.316H21.818Z" fill="white"/>
+    </svg>
+    <span class="topbar__logo-text">Ghost Frame</span>
+  </a>
+  <div class="topbar__sep"></div>
+  <span class="topbar__filename" id="fileName">No image loaded</span>
+  <div class="topbar__spacer"></div>
+  <button class="topbar__btn topbar__toggle-sidebar" id="toggleSidebar" type="button" aria-label="Toggle sidebar">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </button>
+  <div style="position:relative">
+    <button class="topbar__btn topbar__btn--help" id="btnHelp" type="button" aria-label="Help" aria-expanded="false" aria-haspopup="true">?</button>
+    <div class="help-dropdown" id="helpDropdown" role="menu">
+      <button class="help-dropdown__item" id="btnReplayTour" type="button" role="menuitem">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 1 1 1.76 4.24" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M2 12.5V8.5h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Replay Editor Tour
+      </button>
+      <button class="help-dropdown__item" type="button" role="menuitem" onclick="window.open('index.html','_self')">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 12l-4-4 4-4M14 12V9a3 3 0 0 0-3-3H2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Back to Home
+      </button>
+    </div>
+  </div>
+  <button class="topbar__btn" id="btnReset" type="button">Reset</button>
+  <button class="topbar__btn" id="btnSaveProject" type="button" disabled title="Save to your projects">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2h10v10H2zM5 2v4h4V2M4 9h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Save
+  </button>
+  <button class="topbar__btn topbar__btn--primary" id="btnExportTop" type="button" disabled>
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v7M7 9L4.5 6.5M7 9l2.5-2.5M3 12h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Export
+  </button>
+</header>
+
+<!-- ── MAIN LAYOUT ── -->
+<div class="editor-layout">
+
+  <!-- Canvas area -->
+  <div class="canvas-area" id="canvasArea">
+    <div class="canvas-area__drop" id="dropZone">
+      <div class="canvas-area__drop-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect x="4" y="6" width="28" height="24" rx="3" stroke="#fff" stroke-width="1.8" opacity=".3"/><circle cx="12" cy="14" r="2.5" stroke="#fff" stroke-width="1.5" opacity=".3"/><path d="M4 24l8-7 5 4 6-5 9 8" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity=".3"/></svg>
+      </div>
+      <div class="canvas-area__drop-title">Drop an image to start creating</div>
+      <div class="canvas-area__drop-sub">Supports JPG, PNG, WEBP</div>
+      <div class="canvas-area__drop-actions">
+        <button class="drop-btn-primary" id="btnChooseImage" type="button">Choose Image</button>
+        <button class="drop-btn-secondary" id="btnSampleImage" type="button">Try a Sample Image</button>
+      </div>
+      <input type="file" id="fileInputMain" accept="image/png,image/jpeg,image/webp">
+    </div>
+    <div class="canvas-wrap" id="canvasWrap">
+      <canvas id="previewCanvas"></canvas>
+      <button class="canvas-toggle" id="btnToggle" type="button">Show Original</button>
+      <div class="ai-processing-overlay" id="aiOverlay">
+        <div class="ai-proc-spinner"></div>
+        <div class="ai-proc-label" id="aiOverlayLabel">Processing…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Source -->
+    <div class="sb-section" id="sourceSection">
+      <div class="sb-label">Source</div>
+      <div class="sb-upload" id="sbUpload">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3v10M10 13l-4-4M10 13l4-4" stroke="rgba(255,255,255,.4)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16h12" stroke="rgba(255,255,255,.4)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <div class="sb-upload__text">Drop image or click to browse</div>
+        <div class="sb-upload__sub">PNG, JPG, WebP supported</div>
+        <input type="file" id="fileInputSidebar" accept="image/png,image/jpeg,image/webp">
+      </div>
+      <div class="sb-img-info" id="imgInfo">
+        <img class="sb-img-info__thumb" id="imgThumb" src="" alt="">
+        <div class="sb-img-info__meta">
+          <div class="sb-img-info__name" id="imgName"></div>
+          <div class="sb-img-info__dims" id="imgDims"></div>
+        </div>
+        <button class="sb-img-info__remove" id="btnRemoveImg" type="button" title="Remove image" aria-label="Remove image">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="sb-divider"></div>
+
+    <!-- Effects -->
+    <div class="sb-section" id="effectsSection">
+      <div class="sb-label">Effects</div>
+      <div class="fx-search-wrap">
+        <svg class="fx-search-icon" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input class="fx-search" id="fxSearch" type="text" placeholder="Search 30 effects…" autocomplete="off">
+      </div>
+      <div class="fx-search-count" id="fxSearchCount"></div>
+      <div class="fx-categories" id="fxCategories">
+        <div class="fx-category" data-category="basic">
+          <button class="fx-category__header" type="button"><span class="fx-category__arrow">▾</span> Basic <span class="fx-category__count">6</span></button>
+          <div class="fx-category__grid">
+            <button class="fx-btn active" data-fx="brightness" type="button">Brightness</button>
+            <button class="fx-btn" data-fx="contrast" type="button">Contrast</button>
+            <button class="fx-btn" data-fx="grain" type="button">Grain</button>
+            <button class="fx-btn" data-fx="pixelate" type="button">Pixelate</button>
+            <button class="fx-btn" data-fx="duotone" type="button">Duotone</button>
+            <button class="fx-btn" data-fx="vignette" type="button">Vignette</button>
+          </div>
+        </div>
+        <div class="fx-category collapsed" data-category="print">
+          <button class="fx-category__header" type="button"><span class="fx-category__arrow">▾</span> Print / Graphic <span class="fx-category__count">6</span></button>
+          <div class="fx-category__grid">
+            <button class="fx-btn" data-fx="halftone" type="button">Halftone</button>
+            <button class="fx-btn" data-fx="dither" type="button">Dither</button>
+            <button class="fx-btn" data-fx="ascii" type="button">ASCII</button>
+            <button class="fx-btn" data-fx="posterize" type="button">Posterize</button>
+            <button class="fx-btn" data-fx="emboss" type="button">Emboss</button>
+            <button class="fx-btn" data-fx="edgeDetect" type="button">Edge Detect</button>
+          </div>
+        </div>
+        <div class="fx-category collapsed" data-category="glitch">
+          <button class="fx-category__header" type="button"><span class="fx-category__arrow">▾</span> Glitch / Distortion <span class="fx-category__count">7</span></button>
+          <div class="fx-category__grid">
+            <button class="fx-btn" data-fx="glitch" type="button">Glitch</button>
+            <button class="fx-btn" data-fx="rgbShift" type="button">RGB Shift</button>
+            <button class="fx-btn" data-fx="vhs" type="button">VHS</button>
+            <button class="fx-btn" data-fx="crt" type="button">CRT</button>
+            <button class="fx-btn" data-fx="pixelSort" type="button">Pixel Sort</button>
+            <button class="fx-btn" data-fx="scanLines" type="button">Scan Lines</button>
+            <button class="fx-btn" data-fx="hologram" type="button">Hologram</button>
+          </div>
+        </div>
+        <div class="fx-category collapsed" data-category="glass">
+          <button class="fx-category__header" type="button"><span class="fx-category__arrow">▾</span> Glass <span class="fx-category__count">4</span></button>
+          <div class="fx-category__grid">
+            <button class="fx-btn" data-fx="liquidGlass" type="button">Liquid Glass</button>
+            <button class="fx-btn" data-fx="prismGlass" type="button">Prism Glass</button>
+            <button class="fx-btn" data-fx="chromAb" type="button">Chromatic Ab.</button>
+            <button class="fx-btn" data-fx="bloom" type="button">Bloom</button>
+          </div>
+        </div>
+        <div class="fx-category collapsed" data-category="signature">
+          <button class="fx-category__header" type="button"><span class="fx-category__arrow">▾</span> Signature <span class="fx-category__count">7</span></button>
+          <div class="fx-category__grid">
+            <button class="fx-btn" data-fx="dataGhost" type="button">Data Ghost</button>
+            <button class="fx-btn" data-fx="heatSignal" type="button">Heat Signal</button>
+            <button class="fx-btn" data-fx="infrared" type="button">Infrared</button>
+            <button class="fx-btn" data-fx="noiseWash" type="button">Noise Wash</button>
+            <button class="fx-btn" data-fx="mirrorGlitch" type="button">Mirror Glitch</button>
+            <button class="fx-btn" data-fx="tiltShift" type="button">Tilt Shift</button>
+            <button class="fx-btn" data-fx="negativeSpace" type="button">Negative Space</button>
+          </div>
+        </div>
+        <div class="fx-category collapsed" data-category="ai">
+          <button class="fx-category__header" type="button"><span class="fx-category__arrow">▾</span> AI Effects <span class="fx-category__count">9</span></button>
+          <div class="fx-category__grid">
+            <button class="fx-btn" data-fx="ai:remove-bg" type="button">Remove BG</button>
+            <button class="fx-btn" data-fx="ai:upscale" type="button">Upscale 2×</button>
+            <button class="fx-btn" data-fx="ai:vhs-retro" type="button">80s VHS</button>
+            <button class="fx-btn" data-fx="ai:oil-paint" type="button">Oil Paint</button>
+            <button class="fx-btn" data-fx="ai:watercolor" type="button">Watercolor</button>
+            <button class="fx-btn" data-fx="ai:colorize" type="button">Colorize B&W</button>
+            <button class="fx-btn" data-fx="ai:cartoon" type="button">Cartoon</button>
+            <button class="fx-btn" data-fx="ai:make-retro" type="button">Film Retro</button>
+            <button class="fx-btn" data-fx="ai:blur-faces" type="button">Face Blur</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sb-divider"></div>
+
+    <!-- Adjust -->
+    <div class="sb-section" id="adjustSection">
+      <div class="sb-label">Adjust</div>
+      <div class="sb-slider-row">
+        <div class="sb-slider-header">
+          <span class="sb-slider-name">Intensity</span>
+          <span class="sb-slider-val" id="intensityVal">50</span>
+        </div>
+        <input type="range" id="intensitySlider" min="0" max="100" value="50">
+      </div>
+      <div class="sb-slider-row" id="param1Row" style="margin-top:12px">
+        <div class="sb-slider-header">
+          <span class="sb-slider-name" id="param1Name">Displacement</span>
+          <span class="sb-slider-val" id="param1Val">30</span>
+        </div>
+        <input type="range" id="param1Slider" min="0" max="100" value="30">
+      </div>
+    </div>
+
+    <div class="sb-divider"></div>
+
+    <!-- Presets -->
+    <div class="sb-section" id="presetsSection">
+      <div class="sb-label">Presets</div>
+      <div class="preset-row">
+        <button class="preset-btn" data-preset="subtle" type="button">Subtle</button>
+        <button class="preset-btn active" data-preset="medium" type="button">Medium</button>
+        <button class="preset-btn" data-preset="heavy" type="button">Heavy</button>
+        <button class="preset-btn" data-preset="random" type="button">Random</button>
+      </div>
+    </div>
+
+    <div class="sb-divider"></div>
+
+    <!-- Export -->
+    <div class="sb-section" id="exportSection">
+      <div class="sb-label">Export</div>
+      <div class="sb-export-info" id="exportInfo">
+        <div class="sb-export-row"><span class="ek">Resolution</span><span class="ev" id="exportRes">&mdash;</span></div>
+        <div class="sb-export-row"><span class="ek">Format</span><span class="ev">PNG</span></div>
+        <div class="sb-export-row"><span class="ek">Quality</span><span class="ev">Full resolution</span></div>
+      </div>
+      <button class="sb-export-btn" id="btnExport" type="button" disabled>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M8 10L5 7M8 10l3-3M3 14h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download PNG
+      </button>
+    </div>
+
+  </aside>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+</div>
+
+<!-- ── BOTTOM BAR ── -->
+<div class="bottombar" id="bottomBar">
+  <div class="bottombar__item">
+    <span id="bbDims">&mdash;</span>
+  </div>
+  <div class="bottombar__item">
+    <span id="bbSize">&mdash;</span>
+  </div>
+  <div class="bottombar__spacer"></div>
+  <div class="bottombar__item">
+    <div class="bottombar__dot"></div>
+    <span>Processed in browser</span>
+  </div>
+</div>
+
+<!-- ── TOAST CONTAINER ── -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ── TOUR OVERLAY ── -->
+<div class="tour-overlay" id="tourOverlay" aria-hidden="true">
+  <div class="tour-backdrop" id="tourBackdrop"></div>
+  <div class="tour-highlight" id="tourHighlight"></div>
+
+  <!-- Welcome modal -->
+  <div class="tour-welcome" id="tourWelcome" role="dialog" aria-label="Welcome to Ghost Frame">
+    <button class="tour-welcome__close" id="tourWelcomeClose" type="button" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <div class="tour-welcome__logo">
+      <svg viewBox="0 0 32 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20.6547 0.293C26.7599 0.293 31.7092 5.272 31.7092 11.415V23.708C29.1385 23.708 27.0547 21.611 27.0547 19.025V11.415C27.0547 7.859 24.1893 4.976 20.6547 4.976H17.6285C16.0855 4.976 14.6054 5.593 13.5143 6.69L5.62738 14.626C5.19097 15.065 4.9456 15.66 4.94556 16.281V16.683C4.94556 17.976 5.98754 19.025 7.27283 19.025H17.7456C17.7456 21.53 15.79 23.576 13.3308 23.701L13.091 23.708H7.27283C3.41689 23.708 0.291016 20.563 0.291016 16.683V16.281C0.291052 14.418 1.02659 12.632 2.3359 11.314L10.2234 3.379C12.1874 1.403 14.851 0.293 17.6285 0.293H20.6547Z" fill="white"/>
+        <path d="M21.818 7.316C23.4246 7.316 24.7271 8.627 24.7271 10.243V23.707C22.1564 23.707 20.0725 21.61 20.0725 19.024V12H18.1271L14.3246 15.825C13.779 16.374 13.0391 16.682 12.2676 16.682H7.55035C7.30675 16.682 7.18474 16.386 7.35702 16.213L15.3475 8.174C15.893 7.625 16.6328 7.316 17.4044 7.316H21.818Z" fill="white"/>
+      </svg>
+      <span class="tour-welcome__logo-text">Ghost Frame</span>
+    </div>
+    <h2 class="tour-welcome__title">Welcome to Ghost Frame</h2>
+    <p class="tour-welcome__desc">Turn any image into experimental digital artwork with signature effects and simple creative controls.</p>
+    <button class="tour-welcome__start" id="tourStart" type="button">Take the Tour</button>
+    <button class="tour-welcome__skip" id="tourWelcomeSkip" type="button">Skip</button>
+  </div>
+
+  <!-- Step tooltip -->
+  <div class="tour-tooltip" id="tourTooltip" role="dialog" aria-label="Tour step">
+    <div class="tour-tooltip__accent"></div>
+    <div class="tour-tooltip__body">
+      <div class="tour-tooltip__step" id="tourStepNum"></div>
+      <div class="tour-tooltip__title" id="tourStepTitle"></div>
+      <div class="tour-tooltip__desc" id="tourStepDesc"></div>
+    </div>
+    <div class="tour-tooltip__nav">
+      <button class="tour-btn tour-btn--back" id="tourBack" type="button">Back</button>
+      <button class="tour-btn tour-btn--next" id="tourNext" type="button">Next</button>
+      <button class="tour-btn tour-btn--skip" id="tourSkip" type="button">Skip Tour</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+/* Supabase client for direct saves (no backend needed) */
+var _sbClient = supabase.createClient(
+  'https://zdtdajlghningkcimeqa.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkdGRhamxnaG5pbmdrY2ltZXFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5ODMwMTgsImV4cCI6MjEwNTU1OTAxOH0._NehgIJkJzIwkYQc5btVyAyOUUjnFIeYfOR1B1prQ_I'
+);
+</script>
+<script>
+(function(){
+  var originalImg = null;
+  var originalData = null;
+  var currentFx = 'brightness';
+  var intensity = 50;
+  var param1 = 30;
+  var imgFileName = '';
+  var imgW = 0, imgH = 0;
+  var showingOriginal = false;
+
+  var previewCanvas = document.getElementById('previewCanvas');
+  var ctx = previewCanvas.getContext('2d', {willReadFrequently: true});
+  var hiddenCanvas = document.createElement('canvas');
+  var hCtx = hiddenCanvas.getContext('2d', {willReadFrequently: true});
+
+  var dropZone = document.getElementById('dropZone');
+  var canvasWrap = document.getElementById('canvasWrap');
+  var fileInputMain = document.getElementById('fileInputMain');
+  var fileInputSidebar = document.getElementById('fileInputSidebar');
+  var fxCategories = document.getElementById('fxCategories');
+  var intensitySlider = document.getElementById('intensitySlider');
+  var intensityVal = document.getElementById('intensityVal');
+  var param1Slider = document.getElementById('param1Slider');
+  var param1Val = document.getElementById('param1Val');
+  var param1Name = document.getElementById('param1Name');
+  var param1Row = document.getElementById('param1Row');
+  var btnToggle = document.getElementById('btnToggle');
+  var btnExport = document.getElementById('btnExport');
+  var btnExportTop = document.getElementById('btnExportTop');
+  var btnReset = document.getElementById('btnReset');
+  var fileNameEl = document.getElementById('fileName');
+  var imgInfo = document.getElementById('imgInfo');
+  var imgThumb = document.getElementById('imgThumb');
+  var imgName = document.getElementById('imgName');
+  var imgDims = document.getElementById('imgDims');
+  var btnRemoveImg = document.getElementById('btnRemoveImg');
+  var exportRes = document.getElementById('exportRes');
+  var bbDims = document.getElementById('bbDims');
+  var bbSize = document.getElementById('bbSize');
+  var sbUpload = document.getElementById('sbUpload');
+  var toggleSidebar = document.getElementById('toggleSidebar');
+  var sidebar = document.getElementById('sidebar');
+
+  var paramConfig = {
+    brightness: {name:'Exposure', def:50},
+    contrast: {name:'Midpoint', def:50},
+    grain: {name:'Grain Amount', def:45},
+    pixelate: {name:'Pixel Size', def:35},
+    duotone: {name:'Balance', def:50},
+    halftone: {name:'Dot Size', def:40},
+    dither: {name:'Threshold', def:50},
+    ascii: {name:'Character Size', def:40},
+    posterize: {name:'Color Levels', def:50},
+    rgbShift: {name:'Displacement', def:30},
+    vhs: {name:'Tracking', def:40},
+    crt: {name:'Scan Gap', def:35},
+    pixelSort: {name:'Threshold', def:50},
+    liquidGlass: {name:'Refraction', def:45},
+    prismGlass: {name:'Spread', def:40},
+    dataGhost: {name:'Displacement', def:30},
+    heatSignal: {name:'Contrast', def:50},
+    glitch: {name:'Block Size', def:40},
+    scanLines: {name:'Line Gap', def:45},
+    hologram: {name:'Tint Shift', def:50},
+    chromAb: {name:'Fringe Width', def:35},
+    vignette: {name:'Falloff', def:50},
+    emboss: {name:'Depth', def:50},
+    edgeDetect: {name:'Threshold', def:40},
+    bloom: {name:'Radius', def:45},
+    infrared: {name:'Color Shift', def:50},
+    noiseWash: {name:'Dissolution', def:45},
+    mirrorGlitch: {name:'Seam Width', def:35},
+    tiltShift: {name:'Focus Band', def:50},
+    negativeSpace: {name:'Inversion', def:50}
+  };
+
+  /* ── TOAST SYSTEM ── */
+  function showToast(msg){
+    var container = document.getElementById('toastContainer');
+    var el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = msg;
+    container.appendChild(el);
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){ el.classList.add('show'); });
+    });
+    setTimeout(function(){
+      el.classList.remove('show');
+      el.classList.add('hide');
+      setTimeout(function(){ el.remove(); }, 300);
+    }, 3000);
+  }
+
+  /* ── IMAGE LOADING ── */
+  function loadImage(file){
+    if(!file || !file.type.match(/image\/(png|jpeg|webp)/)) return;
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        originalImg = img;
+        imgW = img.width;
+        imgH = img.height;
+        imgFileName = file.name;
+
+        hiddenCanvas.width = imgW;
+        hiddenCanvas.height = imgH;
+        hCtx.drawImage(img, 0, 0);
+        originalData = hCtx.getImageData(0, 0, imgW, imgH);
+
+        previewCanvas.width = imgW;
+        previewCanvas.height = imgH;
+
+        dropZone.classList.add('hidden');
+        canvasWrap.classList.add('active');
+        sbUpload.classList.add('hidden');
+        imgInfo.classList.add('active');
+
+        imgThumb.src = e.target.result;
+        imgName.textContent = file.name;
+        imgDims.textContent = imgW + ' × ' + imgH + ' px';
+        fileNameEl.textContent = file.name;
+        exportRes.textContent = imgW + ' × ' + imgH;
+        bbDims.textContent = imgW + ' × ' + imgH;
+        var sizeKB = Math.round(file.size / 1024);
+        bbSize.textContent = sizeKB > 1024 ? (sizeKB / 1024).toFixed(1) + ' MB' : sizeKB + ' KB';
+
+        btnExport.disabled = false;
+        btnExportTop.disabled = false;
+        btnSaveProject.disabled = false;
+        showingOriginal = false;
+        btnToggle.textContent = 'Show Original';
+
+        applyEffect();
+        showToast('Image loaded');
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function loadImageFromCanvas(canvas, name){
+    canvas.toBlob(function(blob){
+      var file = new File([blob], name, {type:'image/png'});
+      loadImage(file);
+    },'image/png');
+  }
+
+  function removeImage(){
+    originalImg = null;
+    originalData = null;
+    dropZone.classList.remove('hidden');
+    canvasWrap.classList.remove('active');
+    sbUpload.classList.remove('hidden');
+    imgInfo.classList.remove('active');
+    fileNameEl.textContent = 'No image loaded';
+    exportRes.textContent = '—';
+    bbDims.textContent = '—';
+    bbSize.textContent = '—';
+    btnExport.disabled = true;
+    btnExportTop.disabled = true;
+    showToast('Image removed');
+  }
+
+  /* ── SAMPLE IMAGE ── */
+  function generateSampleImage(){
+    var c = document.createElement('canvas');
+    c.width = 800; c.height = 600;
+    var g = c.getContext('2d');
+    var grad = g.createLinearGradient(0,0,800,600);
+    grad.addColorStop(0,'#1a0533');
+    grad.addColorStop(0.3,'#2d1b69');
+    grad.addColorStop(0.5,'#e84393');
+    grad.addColorStop(0.7,'#fd7944');
+    grad.addColorStop(1,'#fdcb6e');
+    g.fillStyle = grad;
+    g.fillRect(0,0,800,600);
+    for(var i=0;i<12;i++){
+      g.beginPath();
+      g.arc(Math.random()*800,Math.random()*600,Math.random()*120+30,0,Math.PI*2);
+      g.fillStyle='rgba(255,255,255,'+(Math.random()*0.08+0.02)+')';
+      g.fill();
+    }
+    for(var i=0;i<6;i++){
+      g.beginPath();
+      g.moveTo(Math.random()*800,0);
+      g.lineTo(Math.random()*800,600);
+      g.strokeStyle='rgba(255,255,255,'+(Math.random()*0.06+0.01)+')';
+      g.lineWidth=Math.random()*3+1;
+      g.stroke();
+    }
+    loadImageFromCanvas(c, 'sample-artwork.png');
+  }
+
+  /* ── EFFECTS ── */
+  function applyEffect(){
+    if(!originalImg) return;
+    if(showingOriginal){
+      ctx.putImageData(originalData, 0, 0);
+      return;
+    }
+
+    var src = originalData;
+    var w = imgW, h = imgH;
+    var out = ctx.createImageData(w, h);
+    var sd = src.data, od = out.data;
+    var t = intensity / 100;
+    var p = param1 / 100;
+
+    switch(currentFx){
+      case 'brightness': fxBrightness(sd, od, w, h, t, p); break;
+      case 'contrast': fxContrast(sd, od, w, h, t, p); break;
+      case 'grain': fxGrain(sd, od, w, h, t, p); break;
+      case 'pixelate': fxPixelate(sd, od, w, h, t, p); break;
+      case 'duotone': fxDuotone(sd, od, w, h, t, p); break;
+      case 'halftone': fxHalftone(sd, od, w, h, t, p); break;
+      case 'dither': fxDither(sd, od, w, h, t, p); break;
+      case 'ascii': fxAscii(sd, od, w, h, t, p); break;
+      case 'posterize': fxPosterize(sd, od, w, h, t, p); break;
+      case 'rgbShift': fxRgbShift(sd, od, w, h, t, p); break;
+      case 'vhs': fxVhs(sd, od, w, h, t, p); break;
+      case 'crt': fxCrt(sd, od, w, h, t, p); break;
+      case 'pixelSort': fxPixelSort(sd, od, w, h, t, p); break;
+      case 'liquidGlass': fxLiquidGlass(sd, od, w, h, t, p); break;
+      case 'prismGlass': fxPrismGlass(sd, od, w, h, t, p); break;
+      case 'dataGhost': fxDataGhost(sd, od, w, h, t, p); break;
+      case 'heatSignal': fxHeatSignal(sd, od, w, h, t, p); break;
+      case 'glitch': fxGlitch(sd, od, w, h, t, p); break;
+      case 'scanLines': fxScanLines(sd, od, w, h, t, p); break;
+      case 'hologram': fxHologram(sd, od, w, h, t, p); break;
+      case 'chromAb': fxChromAb(sd, od, w, h, t, p); break;
+      case 'vignette': fxVignette(sd, od, w, h, t, p); break;
+      case 'emboss': fxEmboss(sd, od, w, h, t, p); break;
+      case 'edgeDetect': fxEdgeDetect(sd, od, w, h, t, p); break;
+      case 'bloom': fxBloom(sd, od, w, h, t, p); break;
+      case 'infrared': fxInfrared(sd, od, w, h, t, p); break;
+      case 'noiseWash': fxNoiseWash(sd, od, w, h, t, p); break;
+      case 'mirrorGlitch': fxMirrorGlitch(sd, od, w, h, t, p); break;
+      case 'tiltShift': fxTiltShift(sd, od, w, h, t, p); break;
+      case 'negativeSpace': fxNegativeSpace(sd, od, w, h, t, p); break;
+    }
+
+    ctx.putImageData(out, 0, 0);
+  }
+
+  /* ── BASIC EFFECTS ── */
+
+  function fxBrightness(sd, od, w, h, t, p){
+    var adj = (p - 0.5) * 200 * t;
+    for(var i = 0; i < sd.length; i += 4){
+      od[i]   = Math.max(0, Math.min(255, sd[i] + adj));
+      od[i+1] = Math.max(0, Math.min(255, sd[i+1] + adj));
+      od[i+2] = Math.max(0, Math.min(255, sd[i+2] + adj));
+      od[i+3] = sd[i+3];
+    }
+  }
+
+  function fxContrast(sd, od, w, h, t, p){
+    var factor = 1 + (p - 0.5) * 4 * t;
+    var mid = 128;
+    for(var i = 0; i < sd.length; i += 4){
+      od[i]   = Math.max(0, Math.min(255, (sd[i] - mid) * factor + mid));
+      od[i+1] = Math.max(0, Math.min(255, (sd[i+1] - mid) * factor + mid));
+      od[i+2] = Math.max(0, Math.min(255, (sd[i+2] - mid) * factor + mid));
+      od[i+3] = sd[i+3];
+    }
+  }
+
+  function fxGrain(sd, od, w, h, t, p){
+    var amount = p * 120 * t;
+    for(var y = 0; y < h; y++){
+      for(var x = 0; x < w; x++){
+        var i = (y * w + x) * 4;
+        var noise = (Math.random() - 0.5) * amount;
+        od[i]   = Math.max(0, Math.min(255, sd[i] + noise));
+        od[i+1] = Math.max(0, Math.min(255, sd[i+1] + noise));
+        od[i+2] = Math.max(0, Math.min(255, sd[i+2] + noise));
+        od[i+3] = sd[i+3];
+      }
+    }
+  }
+
+  function fxDuotone(sd, od, w, h, t, p){
+    var c1 = {r:26, g:26, b:46};
+    var c2 = {r:245, g:180, b:91};
+    var balance = p * 2;
+    for(var i = 0; i < sd.length; i += 4){
+      var lum = (sd[i] * 0.299 + sd[i+1] * 0.587 + sd[i+2] * 0.114) / 255;
+      var l = Math.pow(lum, balance > 0 ? balance : 0.5);
+      var dr = c1.r + (c2.r - c1.r) * l;
+      var dg = c1.g + (c2.g - c1.g) * l;
+      var db = c1.b + (c2.b - c1.b) * l;
+      od[i]   = Math.round(sd[i] + (dr - sd[i]) * t);
+      od[i+1] = Math.round(sd[i+1] + (dg - sd[i+1]) * t);
+      od[i+2] = Math.round(sd[i+2] + (db - sd[i+2]) * t);
+      od[i+3] = sd[i+3];
+    }
+  }
+
+  /* ── PRINT / GRAPHIC EFFECTS ── */
+
+  function fxHalftone(sd, od, w, h, t, p){
+    var dotSpacing = Math.max(3, Math.floor(p * 16 + 3));
+    for(var i = 0; i < od.length; i += 4){ od[i] = 0; od[i+1] = 0; od[i+2] = 0; od[i+3] = 255; }
+    for(var cy = 0; cy < h; cy += dotSpacing){
+      for(var cx = 0; cx < w; cx += dotSpacing){
+        var sum = 0, count = 0;
+        for(var dy = 0; dy < dotSpacing && cy+dy < h; dy++){
+          for(var dx = 0; dx < dotSpacing && cx+dx < w; dx++){
+            var si = ((cy+dy) * w + (cx+dx)) * 4;
+            sum += sd[si] * 0.299 + sd[si+1] * 0.587 + sd[si+2] * 0.114;
+            count++;
+          }
+        }
+        var avg = sum / count / 255;
+        var radius = (1 - avg) * dotSpacing * 0.5 * t;
+        var midX = cx + dotSpacing / 2, midY = cy + dotSpacing / 2;
+        for(var dy = 0; dy < dotSpacing && cy+dy < h; dy++){
+          for(var dx = 0; dx < dotSpacing && cx+dx < w; dx++){
+            var dist = Math.sqrt((cx+dx - midX) * (cx+dx - midX) + (cy+dy - midY) * (cy+dy - midY));
+            if(dist <= radius){
+              var oi = ((cy+dy) * w + (cx+dx)) * 4;
+              od[oi] = 255; od[oi+1] = 255; od[oi+2] = 255;
+            }
+          }
+        }
+      }
+    }
+    if(t < 1){
+      for(var i = 0; i < sd.length; i += 4){
+        od[i]   = Math.round(sd[i] + (od[i] - sd[i]) * t);
+        od[i+1] = Math.round(sd[i+1] + (od[i+1] - sd[i+1]) * t);
+        od[i+2] = Math.round(sd[i+2] + (od[i+2] - sd[i+2]) * t);
+      }
+    }
+  }
+
+  function fxDither(sd, od, w, h, t, p){
+    var grey = new Float32Array(w * h);
+    for(var i = 0; i < w * h; i++){
+      var si = i * 4;
+      grey[i] = sd[si] * 0.299 + sd[si+1] * 0.587 + sd[si+2] * 0.114;
+    }
+    var threshold = 128 + (p - 0.5) * 100;
+    for(var y = 0; y < h; y++){
+      for(var x = 0; x < w; x++){
+        var idx = y * w + x;
+        var old = grey[idx];
+        var nw = old > threshold ? 255 : 0;
+        grey[idx] = nw;
+        var err = old - nw;
+        if(x + 1 < w) grey[idx + 1] += err * 7 / 16;
+        if(y + 1 < h){
+          if(x > 0) grey[(y+1) * w + (x-1)] += err * 3 / 16;
+          grey[(y+1) * w + x] += err * 5 / 16;
+          if(x + 1 < w) grey[(y+1) * w + (x+1)] += err * 1 / 16;
+        }
+      }
+    }
+    for(var i = 0; i < w * h; i++){
+      var oi = i * 4;
+      var v = Math.max(0, Math.min(255, grey[i]));
+      var blended = Math.round(sd[oi] * 0.299 + sd[oi+1] * 0.587 + sd[oi+2] * 0.114 + (v - (sd[oi] * 0.299 + sd[oi+1] * 0.587 + sd[oi+2] * 0.114)) * t);
+      od[oi] = blended; od[oi+1] = blended; od[oi+2] = blended; od[oi+3] = sd[oi+3];
+    }
+  }
+
+  function fxAscii(sd, od, w, h, t, p){
+    var cellSize = Math.max(3, Math.floor(p * 12 + 3));
+    var chars = ' .:-=+*#%@';
+    for(var i = 0; i < od.length; i += 4){ od[i] = 0; od[i+1] = 0; od[i+2] = 0; od[i+3] = 255; }
+    for(var cy = 0; cy < h; cy += cellSize){
+      for(var cx = 0; cx < w; cx += cellSize){
+        var sum = 0, count = 0;
+        for(var dy = 0; dy < cellSize && cy+dy < h; dy++){
+          for(var dx = 0; dx < cellSize && cx+dx < w; dx++){
+            var si = ((cy+dy) * w + (cx+dx)) * 4;
+            sum += sd[si] * 0.299 + sd[si+1] * 0.587 + sd[si+2] * 0.114;
+            count++;
+          }
+        }
+        var avg = sum / count / 255;
+        var charIdx = Math.min(chars.length - 1, Math.floor(avg * chars.length));
+        var brightness = Math.floor(avg * 255);
+        for(var dy = 0; dy < cellSize && cy+dy < h; dy++){
+          for(var dx = 0; dx < cellSize && cx+dx < w; dx++){
+            var oi = ((cy+dy) * w + (cx+dx)) * 4;
+            if(charIdx > 0){
+              od[oi] = brightness; od[oi+1] = brightness; od[oi+2] = brightness;
+            }
+          }
+        }
+      }
+    }
+    if(t < 1){
+      for(var i = 0; i < sd.length; i += 4){
+        od[i]   = Math.round(sd[i] + (od[i] - sd[i]) * t);
+        od[i+1] = Math.round(sd[i+1] + (od[i+1] - sd[i+1]) * t);
+        od[i+2] = Math.round(sd[i+2] + (od[i+2] - sd[i+2]) * t);
+      }
+    }
+  }
+
+  function fxPosterize(sd, od, w, h, t, p){
+    var levels = Math.max(2, Math.floor(2 + p * 8));
+    var step = 256 / levels;
+    var halfStep = step / 2;
+    for(var i = 0; i < sd.length; i += 4){
+      var pr = Math.min(255, Math.floor((sd[i] + halfStep) / step) * step);
+      var pg = Math.min(255, Math.floor((sd[i+1] + halfStep) / step) * step);
+      var pb = Math.min(255, Math.floor((sd[i+2] + halfStep) / step) * step);
+      od[i]   = Math.round(sd[i] + (pr - sd[i]) * t);
+      od[i+1] = Math.round(sd[i+1] + (pg - sd[i+1]) * t);
+      od[i+2] = Math.round(sd[i+2] + (pb - sd[i+2]) * t);
+      od[i+3] = sd[i+3];
+    }
+  }
+
+  /* ── GLITCH / DISTORTION EFFECTS ── */
+
+  function fxRgbShift(sd, od, w, h, t, p){
+    var disp = Math.floor(p * 30 * t) + 1;
+    for(var y = 0; y < h; y++){
+      for(var x = 0; x < w; x++){
+        var oi = (y * w + x) * 4;
+        var rxR = Math.min(w - 1, Math.max(0, x + disp));
+        var rxB = Math.min(w - 1, Math.max(0, x - disp));
+        od[oi]   = sd[(y * w + rxR) * 4];
+        od[oi+1] = sd[oi+1];
+        od[oi+2] = sd[(y * w + rxB) * 4 + 2];
+        od[oi+3] = sd[oi+3];
+      }
+    }
+  }
+
+  function fxVhs(sd, od, w, h, t, p){
+    var disp = Math.floor(p * 15 * t) + 1;
+    var scanH = Math.max(1, Math.floor(h * 0.003));
+    for(var y = 0; y < h; y++){
+      var rowShift = 0;
+      if(Math.random() < 0.03 * t) rowShift = Math.floor((Math.random() - 0.5) * p * 40);
+      for(var x = 0; x < w; x++){
+        var oi = (y * w + x) * 4;
+        var sx = Math.min(w - 1, Math.max(0, x + rowShift));
+        var rxR = Math.min(w - 1, Math.max(0, sx + disp));
+        var rxB = Math.min(w - 1, Math.max(0, sx - disp));
+        od[oi]   = sd[(y * w + rxR) * 4];
+        od[oi+1] = sd[(y * w + sx) * 4 + 1];
+        od[oi+2] = sd[(y * w + rxB) * 4 + 2];
+        od[oi+3] = 255;
+      }
+      if(y % (scanH * 4) < scanH){
+        for(var x = 0; x < w; x++){
+          var oi = (y * w + x) * 4;
+          od[oi] = Math.floor(od[oi] * (0.6 + 0.4 * (1 - t)));
+          od[oi+1] = Math.floor(od[oi+1] * (0.6 + 0.4 * (1 - t)));
+          od[oi+2] = Math.floor(od[oi+2] * (0.6 + 0.4 * (1 - t)));
+        }
+      }
+    }
+  }
+
+  function fxCrt(sd, od, w, h, t, p){
+    var gap = Math.max(2, Math.floor(p * 8 + 2));
+    for(var y = 0; y < h; y++){
+      var scanDim = (y % gap === 0) ? (0.5 + 0.5 * (1 - t)) : 1;
+      for(var x = 0; x < w; x++){
+        var oi = (y * w + x) * 4;
+        var subpixel = x % 3;
+        var r = sd[oi], g = sd[oi+1], b = sd[oi+2];
+        if(t > 0.3){
+          if(subpixel === 0){ g *= 0.7; b *= 0.7; }
+          else if(subpixel === 1){ r *= 0.7; b *= 0.7; }
+          else { r *= 0.7; g *= 0.7; }
+          r = sd[oi] + (r - sd[oi]) * t;
+          g = sd[oi+1] + (g - sd[oi+1]) * t;
+          b = sd[oi+2] + (b - sd[oi+2]) * t;
+        }
+        od[oi]   = Math.max(0, Math.min(255, Math.floor(r * scanDim)));
+        od[oi+1] = Math.max(0, Math.min(255, Math.floor(g * scanDim)));
+        od[oi+2] = Math.max(0, Math.min(255, Math.floor(b * scanDim)));
+        od[oi+3] = sd[oi+3];
+      }
+    }
+  }
+
+  function fxPixelSort(sd, od, w, h, t, p){
+    var threshold = (1 - p) * 255;
+    for(var i = 0; i < sd.length; i++) od[i] = sd[i];
+    for(var y = 0; y < h; y++){
+      var row = [];
+      for(var x = 0; x < w; x++){
+        var si = (y * w + x) * 4;
+        var lum = sd[si] * 0.299 + sd[si+1] * 0.587 + sd[si+2] * 0.114;
+        row.push({x:x, r:sd[si], g:sd[si+1], b:sd[si+2], a:sd[si+3], lum:lum});
+      }
+      var spanStart = -1;
+      for(var x = 0; x <= w; x++){
+        var aboveThreshold = x < w && row[x].lum > threshold;
+        if(aboveThreshold && spanStart === -1) spanStart = x;
+        if(!aboveThreshold && spanStart !== -1){
+          var span = row.slice(spanStart, x);
+          span.sort(function(a, b){ return a.lum - b.lum; });
+          for(var s = 0; s < span.length; s++){
+            var oi = (y * w + (spanStart + s)) * 4;
+            var orig = row[spanStart + s];
+            od[oi]   = Math.round(orig.r + (span[s].r - orig.r) * t);
+            od[oi+1] = Math.round(orig.g + (span[s].g - orig.g) * t);
+            od[oi+2] = Math.round(orig.b + (span[s].b - orig.b) * t);
+            od[oi+3] = span[s].a;
+          }
+          spanStart = -1;
+        }
+      }
+    }
+  }
+
+  /* ── GLASS EFFECTS ── */
+
+  function fxLiquidGlass(sd, od, w, h, t, p){
+    var strength = p * 30 * t;
+    var freq = 0.02 + p * 0.04;
+    for(var y = 0; y < h; y++){
+      for(var x = 0; x < w; x++){
+        var dx = Math.sin(y * freq + x * freq * 0.5) * strength;
+        var dy = Math.cos(x * freq + y * freq * 0.5) * strength;
+        var sx = Math.min(w - 1, Math.max(0, Math.round(x + dx)));
+        var sy = Math.min(h - 1, Math.max(0, Math.round(y + dy)));
+        var oi = (y * w + x) * 4;
+        var si = (sy * w + sx) * 4;
+        od[oi] = sd[si]; od[oi+1] = sd[si+1]; od[oi+2] = sd[si+2]; od[oi+3] = sd[si+3];
+      }
+    }
+  }
+
+  function fxPrismGlass(sd, od, w, h, t, p){
+    var spread = Math.floor(p * 20 * t) + 1;
+    for(var y = 0; y < h; y++){
+      for(var x = 0; x < w; x++){
+        var oi = (y * w + x) * 4;
+        var angle = Math.atan2(y - h/2, x - w/2);
+        var drx = Math.round(Math.cos(angle) * spread);
+        var dry = Math.round(Math.sin(angle) * spread);
+        var rx = Math.min(w-1, Math.max(0, x + drx));
+        var ry = Math.min(h-1, Math.max(0, y + dry));
+        var bx = Math.min(w-1, Math.max(0, x - drx));
+        var by = Math.min(h-1, Math.max(0, y - dry));
+        od[oi]   = sd[(ry * w + rx) * 4];
+        od[oi+1] = sd[oi+1];
+        od[oi+2] = sd[(by * w + bx) * 4 + 2];
+        od[oi+3] = sd[oi+3];
+      }
+    }
+  }
+
+  /* ── SIGNATURE EFFECTS ── */
+
+  function fxDataGhost(sd, od, w, h, t, p){
+    var disp = Math.floor(p * 30 * t) + 1;
+    for(var y = 0; y < h; y++){
+      for(var x = 0; x < w; x++){
+        var i = (y * w + x) * 4;
+        var rx = Math.min(w - 1, x + disp);
+        var ri = (y * w + rx) * 4;
+        var bx = Math.max(0, x - disp);
+        var bi = (y * w + bx) * 4;
+
+        od[i]   = Math.round(sd[ri] * t + sd[i] * (1 - t));
+        od[i+1] = sd[i+1];
+        od[i+2] = Math.round(sd[bi+2] * t + sd[i+2] * (1 - t));
+        od[i+3] = sd[i+3];
+
+        if(t > 0.3 && y % (Math.max(2, Math.floor(8 - t * 6))) === 0){
+          var scanline = 1 - t * 0.15;
+          od[i]   = Math.round(od[i] * scanline);
+          od[i+1] = Math.round(od[i+1] * scanline);
+          od[i+2] = Math.round(od[i+2] * scanline);
+        }
+      }
+    }
+  }
+
+  function fxHeatSignal(sd, od, w, h, t, p){
+    for(var y = 0; y < h; y++){
+      for(var x = 0; x < w; x++){
+        var i = (y * w + x) * 4;
+        var lum = (sd[i] * 0.299 + sd[i+1] * 0.587 + sd[i+2] * 0.114) / 255;
+        lum = Math.pow(lum, 1 - p * 0.5);
+        var r, g, b;
+        if(lum < 0.25){
+          var f = lum / 0.25;
+          r = 0; g = 0; b = Math.round(128 * f);
+        } else if(lum < 0.5){
+          var f = (lum - 0.25) / 0.25;
+          r = Math.round(255 * f); g = 0; b = Math.round(128 * (1 - f));
+        } else if(lum < 0.75){
+          var f = (lum - 0.5) / 0.25;
+          r = 255; g = Math.round(255 * f); b = 0;
+        } else {
+          var f = (lum - 0.75) / 0.25;
+          r = 255; g = 255; b = Math.round(255 * f);
+        }
+        od[i]   = Math.round(r * t + sd[i] * (1 - t));
+        od[i+1] = Math.round(g * t + sd[i+1] * (1 - t));
+        od[i+2] = Math.round(b * t + sd[i+2] * (1 - t));
+        od[i+3] = sd[i+3];
+      }
+    }
+  }
+
+  function fxInfrared(sd, od, w, h, t, p){
+    var shift = p * 2;
+    for(var i=0;i<sd.length;i+=4){
+      var r=sd[i],g=sd[i+1],b=sd[i+2];
+      var lum=(r*0.299+g*0.587+b*0.114)/255;
+      var ir_r=Math.min(255, g*1.2 + r*0.3);
+      var ir_g=Math.min(255, r*0.4 + b*0.2);
+      var ir_b=Math.min(255, b*0.6 + g*0.15);
+      ir_r=Math.min(255, ir_r + (shift-1)*80);
+      ir_b=Math.min(255, ir_b + (1-shift)*60);
+      if(g>120){ir_r=Math.min(255,ir_r+g*0.5*shift);ir_g=Math.max(0,ir_g-g*0.3);}
+      od[i]=Math.round(ir_r*t+r*(1-t));
+      od[i+1]=Math.round(ir_g*t+g*(1-t));
+      od[i+2]=Math.round(ir_b*t+b*(1-t));
+      od[i+3]=sd[i+3];
+    }
+  }
+
+  function fxNoiseWash(sd, od, w, h, t, p){
+    var scale=0.01+p*0.03;
+    var dissolve=t*1.5;
+    for(var y=0;y<h;y++){
+      for(var x=0;x<w;x++){
+        var i=(y*w+x)*4;
+        var n1=Math.sin(x*scale*7.3+y*scale*4.1)*0.5+0.5;
+        var n2=Math.sin(x*scale*3.7+y*scale*9.2+2.1)*0.5+0.5;
+        var n3=Math.sin((x+y)*scale*5.5+1.7)*0.5+0.5;
+        var noise=(n1*0.5+n2*0.3+n3*0.2);
+        var dx=Math.round(Math.sin(noise*6.28)*dissolve*15);
+        var dy=Math.round(Math.cos(noise*6.28)*dissolve*15);
+        var sx=Math.min(w-1,Math.max(0,x+dx));
+        var sy=Math.min(h-1,Math.max(0,y+dy));
+        var si=(sy*w+sx)*4;
+        var blend=noise*dissolve*0.6;
+        if(blend>1) blend=1;
+        od[i]=Math.round(sd[si]*(1-blend*0.4)+sd[i]*blend*0.4+noise*60*t);
+        od[i+1]=Math.round(sd[si+1]*(1-blend*0.3)+sd[i+1]*blend*0.3+noise*40*t);
+        od[i+2]=Math.round(sd[si+2]*(1-blend*0.5)+sd[i+2]*blend*0.5+noise*50*t);
+        od[i]=Math.min(255,od[i]);od[i+1]=Math.min(255,od[i+1]);od[i+2]=Math.min(255,od[i+2]);
+        od[i+3]=sd[i+3];
+      }
+    }
+  }
+
+  function fxMirrorGlitch(sd, od, w, h, t, p){
+    var seamW=Math.floor(p*40*t)+2;
+    var half=Math.floor(w/2);
+    for(var y=0;y<h;y++){
+      for(var x=0;x<w;x++){
+        var i=(y*w+x)*4;
+        var mx;
+        if(x<half) mx=x; else mx=w-1-x;
+        var si=(y*w+mx)*4;
+        od[i]=sd[si];od[i+1]=sd[si+1];od[i+2]=sd[si+2];od[i+3]=sd[si+3];
+      }
+      if(Math.random()<0.08*t){
+        var shift=Math.floor((Math.random()-0.5)*seamW*2);
+        for(var x=Math.max(0,half-seamW);x<Math.min(w,half+seamW);x++){
+          var i=(y*w+x)*4;
+          var sx=Math.min(w-1,Math.max(0,x+shift));
+          var si=(y*w+sx)*4;
+          od[i]=sd[si];od[i+2]=sd[(y*w+Math.min(w-1,Math.max(0,x-shift)))*4+2];
+        }
+      }
+    }
+    for(var y=0;y<h;y++){
+      for(var x=Math.max(0,half-2);x<Math.min(w,half+2);x++){
+        var i=(y*w+x)*4;
+        od[i]=Math.min(255,od[i]+60*t);
+        od[i+1]=Math.min(255,od[i+1]+80*t);
+        od[i+2]=Math.min(255,od[i+2]+100*t);
+      }
+    }
+  }
+
+  function fxTiltShift(sd, od, w, h, t, p){
+    var bandH=h*(0.15+p*0.25);
+    var center=h*0.5;
+    var radius=Math.max(2,Math.floor(t*8)+1);
+    for(var y=0;y<h;y++){
+      var distFromCenter=Math.abs(y-center);
+      var inFocus=distFromCenter<bandH*0.5;
+      var blurAmount=inFocus?0:Math.min(1,(distFromCenter-bandH*0.5)/(bandH*0.5));
+      blurAmount*=t;
+      for(var x=0;x<w;x++){
+        var i=(y*w+x)*4;
+        if(blurAmount<0.05){
+          var sat=1+0.3*t;
+          var lum=(sd[i]*0.299+sd[i+1]*0.587+sd[i+2]*0.114);
+          od[i]=Math.min(255,Math.round(lum+(sd[i]-lum)*sat));
+          od[i+1]=Math.min(255,Math.round(lum+(sd[i+1]-lum)*sat));
+          od[i+2]=Math.min(255,Math.round(lum+(sd[i+2]-lum)*sat));
+          od[i+3]=sd[i+3];
+        } else {
+          var r=Math.ceil(radius*blurAmount);
+          var sr=0,sg=0,sb=0,cnt=0;
+          for(var by=Math.max(0,y-r);by<=Math.min(h-1,y+r);by++){
+            for(var bx=Math.max(0,x-r);bx<=Math.min(w-1,x+r);bx++){
+              var bi=(by*w+bx)*4;
+              sr+=sd[bi];sg+=sd[bi+1];sb+=sd[bi+2];cnt++;
+            }
+          }
+          od[i]=Math.round(sr/cnt);od[i+1]=Math.round(sg/cnt);od[i+2]=Math.round(sb/cnt);
+          od[i+3]=sd[i+3];
+        }
+      }
+    }
+  }
+
+  function fxNegativeSpace(sd, od, w, h, t, p){
+    var threshold=p;
+    for(var i=0;i<sd.length;i+=4){
+      var r=sd[i],g=sd[i+1],b=sd[i+2];
+      var lum=(r*0.299+g*0.587+b*0.114)/255;
+      if(lum>threshold){
+        var inv_r=255-r,inv_g=255-g,inv_b=255-b;
+        var dark=0.15;
+        od[i]=Math.round((inv_r*dark)*t+r*(1-t));
+        od[i+1]=Math.round((inv_g*dark)*t+g*(1-t));
+        od[i+2]=Math.round((inv_b*dark)*t+b*(1-t));
+      } else {
+        var boost=1.4+t*0.6;
+        var comp_r=Math.min(255,(255-r)*0.6+b*0.4);
+        var comp_g=Math.min(255,(255-g)*0.4+r*0.2);
+        var comp_b=Math.min(255,(255-b)*0.5+g*0.3);
+        comp_r=Math.min(255,comp_r*boost);
+        comp_g=Math.min(255,comp_g*boost);
+        comp_b=Math.min(255,comp_b*boost);
+        od[i]=Math.round(comp_r*t+r*(1-t));
+        od[i+1]=Math.round(comp_g*t+g*(1-t));
+        od[i+2]=Math.round(comp_b*t+b*(1-t));
+      }
+      od[i+3]=sd[i+3];
+    }
+  }
+
+  function fxGlitch(sd, od, w, h, t, p){
+    for(var i=0;i<sd.length;i++) od[i]=sd[i];
+    var blockH = Math.max(2, Math.floor(p * 30) + 4);
+    var maxDisp = Math.floor(w * 0.15 * t);
+    var numBlocks = Math.floor(h * t * 0.3 / blockH);
+    for(var b=0;b<numBlocks;b++){
+      var by = Math.floor(Math.random()*h);
+      var bh = Math.min(blockH, h - by);
+      var disp = Math.floor((Math.random()-0.5)*2*maxDisp);
+      for(var y=by;y<by+bh;y++){
+        for(var x=0;x<w;x++){
+          var di = (y*w+x)*4;
+          var sx = x - disp;
+          if(sx<0) sx+=w; if(sx>=w) sx-=w;
+          var si = (y*w+sx)*4;
+          od[di]=sd[si]; od[di+1]=sd[si+1]; od[di+2]=sd[si+2]; od[di+3]=sd[si+3];
+        }
+      }
+      var cDisp = Math.floor(disp*0.5);
+      for(var y=by;y<by+bh;y++){
+        for(var x=0;x<w;x++){
+          var di = (y*w+x)*4;
+          var rxSrc = x+cDisp; if(rxSrc<0) rxSrc+=w; if(rxSrc>=w) rxSrc-=w;
+          var bxSrc = x-cDisp; if(bxSrc<0) bxSrc+=w; if(bxSrc>=w) bxSrc-=w;
+          od[di]   = sd[(y*w+rxSrc)*4];
+          od[di+2] = sd[(y*w+bxSrc)*4+2];
+        }
+      }
+    }
+    for(var y=0;y<h;y+=2){
+      for(var x=0;x<w;x++){
+        var i=(y*w+x)*4;
+        od[i]  =Math.round(od[i]*0.88);
+        od[i+1]=Math.round(od[i+1]*0.88);
+        od[i+2]=Math.round(od[i+2]*0.88);
+      }
+    }
+  }
+
+  function fxScanLines(sd, od, w, h, t, p){
+    var gap = Math.max(2, Math.floor(p * 8) + 2);
+    var darkAmount = 0.35 * t;
+    for(var y=0;y<h;y++){
+      var isScanLine = (y % gap === 0);
+      for(var x=0;x<w;x++){
+        var i=(y*w+x)*4;
+        if(isScanLine){
+          od[i]   = Math.round(sd[i]   * (1 - darkAmount));
+          od[i+1] = Math.round(sd[i+1] * (1 - darkAmount));
+          od[i+2] = Math.round(sd[i+2] * (1 - darkAmount));
+        } else {
+          od[i]=sd[i]; od[i+1]=sd[i+1]; od[i+2]=sd[i+2];
+        }
+        od[i+3]=sd[i+3];
+      }
+    }
+  }
+
+  function fxHologram(sd, od, w, h, t, p){
+    var scanGap = 3;
+    var tintShift = p;
+    for(var y=0;y<h;y++){
+      var scanDark = (y % scanGap === 0) ? 0.7 : 1.0;
+      for(var x=0;x<w;x++){
+        var i=(y*w+x)*4;
+        var lum = sd[i]*0.299 + sd[i+1]*0.587 + sd[i+2]*0.114;
+        var cr = lum * 0.3 + sd[i] * 0.1;
+        var cg = lum * 0.85;
+        var cb = lum * 0.6 + sd[i+2] * 0.2;
+        cr += 40 * tintShift;
+        cb += 60 * (1 - tintShift);
+        cg += 30;
+        cr = Math.min(255, cr) * scanDark;
+        cg = Math.min(255, cg) * scanDark;
+        cb = Math.min(255, cb) * scanDark;
+        od[i]   = Math.round(cr * t + sd[i] * (1 - t));
+        od[i+1] = Math.round(cg * t + sd[i+1] * (1 - t));
+        od[i+2] = Math.round(cb * t + sd[i+2] * (1 - t));
+        od[i+3] = sd[i+3];
+      }
+    }
+  }
+
+  function fxChromAb(sd, od, w, h, t, p){
+    var maxOffset = Math.floor((p * 12 + 2) * t);
+    for(var y=0;y<h;y++){
+      for(var x=0;x<w;x++){
+        var i=(y*w+x)*4;
+        var dx = (x / w - 0.5) * 2;
+        var dy = (y / h - 0.5) * 2;
+        var dist = Math.sqrt(dx*dx + dy*dy);
+        var offset = Math.floor(dist * maxOffset);
+        var rxSrc = Math.min(w-1, Math.max(0, x + offset));
+        var bxSrc = Math.min(w-1, Math.max(0, x - offset));
+        var rySrc = Math.min(h-1, Math.max(0, y + Math.floor(offset*0.5)));
+        var bySrc = Math.min(h-1, Math.max(0, y - Math.floor(offset*0.5)));
+        od[i]   = sd[(rySrc*w+rxSrc)*4];
+        od[i+1] = sd[i+1];
+        od[i+2] = sd[(bySrc*w+bxSrc)*4+2];
+        od[i+3] = sd[i+3];
+      }
+    }
+  }
+
+  function fxVignette(sd, od, w, h, t, p){
+    var cx = w * 0.5, cy = h * 0.5;
+    var maxDist = Math.sqrt(cx*cx + cy*cy);
+    var falloff = 0.3 + p * 0.7;
+    for(var y=0;y<h;y++){
+      for(var x=0;x<w;x++){
+        var i=(y*w+x)*4;
+        var dx = x - cx, dy = y - cy;
+        var dist = Math.sqrt(dx*dx + dy*dy) / maxDist;
+        var v = 1 - Math.pow(dist / falloff, 2);
+        if(v < 0) v = 0;
+        var factor = 1 - (1 - v) * t;
+        od[i]   = Math.round(sd[i] * factor);
+        od[i+1] = Math.round(sd[i+1] * factor);
+        od[i+2] = Math.round(sd[i+2] * factor);
+        od[i+3] = sd[i+3];
+      }
+    }
+  }
+
+  function fxEmboss(sd, od, w, h, t, p){
+    var strength = 1 + p * 4;
+    for(var y=0;y<h;y++){
+      for(var x=0;x<w;x++){
+        var i=(y*w+x)*4;
+        if(x===0||y===0||x===w-1||y===h-1){
+          od[i]=128; od[i+1]=128; od[i+2]=128; od[i+3]=sd[i+3];
+          continue;
+        }
+        var tl=(((y-1)*w+(x-1))*4), br=(((y+1)*w+(x+1))*4);
+        var r = sd[br]   - sd[tl]   ;
+        var g = sd[br+1] - sd[tl+1] ;
+        var b = sd[br+2] - sd[tl+2] ;
+        r = Math.max(0, Math.min(255, 128 + r * strength));
+        g = Math.max(0, Math.min(255, 128 + g * strength));
+        b = Math.max(0, Math.min(255, 128 + b * strength));
+        od[i]   = Math.round(r * t + sd[i] * (1 - t));
+        od[i+1] = Math.round(g * t + sd[i+1] * (1 - t));
+        od[i+2] = Math.round(b * t + sd[i+2] * (1 - t));
+        od[i+3] = sd[i+3];
+      }
+    }
+  }
+
+  function fxEdgeDetect(sd, od, w, h, t, p){
+    var threshold = p * 120;
+    for(var y=0;y<h;y++){
+      for(var x=0;x<w;x++){
+        var i=(y*w+x)*4;
+        if(x===0||y===0||x===w-1||y===h-1){
+          od[i]=0; od[i+1]=0; od[i+2]=0; od[i+3]=sd[i+3];
+          continue;
+        }
+        var iU=((y-1)*w+x)*4, iD=((y+1)*w+x)*4;
+        var iL=(y*w+(x-1))*4, iR=(y*w+(x+1))*4;
+        var gxR = sd[iR]-sd[iL], gxG = sd[iR+1]-sd[iL+1], gxB = sd[iR+2]-sd[iL+2];
+        var gyR = sd[iD]-sd[iU], gyG = sd[iD+1]-sd[iU+1], gyB = sd[iD+2]-sd[iU+2];
+        var magR = Math.abs(gxR)+Math.abs(gyR);
+        var magG = Math.abs(gxG)+Math.abs(gyG);
+        var magB = Math.abs(gxB)+Math.abs(gyB);
+        var mag = (magR+magG+magB) / 3;
+        var edge = mag > threshold ? 255 : 0;
+        od[i]   = Math.round(edge * t + sd[i] * (1 - t));
+        od[i+1] = Math.round(edge * t + sd[i+1] * (1 - t));
+        od[i+2] = Math.round(edge * t + sd[i+2] * (1 - t));
+        od[i+3] = sd[i+3];
+      }
+    }
+  }
+
+  function fxBloom(sd, od, w, h, t, p){
+    var radius = Math.max(2, Math.floor(p * 10) + 2);
+    var lumThresh = 0.55;
+    var bright = new Float32Array(w * h);
+    for(var y=0;y<h;y++){
+      for(var x=0;x<w;x++){
+        var i=(y*w+x)*4;
+        var lum = (sd[i]*0.299 + sd[i+1]*0.587 + sd[i+2]*0.114) / 255;
+        bright[y*w+x] = lum > lumThresh ? (lum - lumThresh) / (1 - lumThresh) : 0;
+      }
+    }
+    for(var y=0;y<h;y++){
+      for(var x=0;x<w;x++){
+        var i=(y*w+x)*4;
+        var sum = 0, count = 0;
+        var y0 = Math.max(0,y-radius), y1 = Math.min(h-1,y+radius);
+        var x0 = Math.max(0,x-radius), x1 = Math.min(w-1,x+radius);
+        for(var by=y0;by<=y1;by++){
+          for(var bx=x0;bx<=x1;bx++){
+            sum += bright[by*w+bx]; count++;
+          }
+        }
+        var glow = (sum / count) * 2.5;
+        od[i]   = Math.min(255, Math.round(sd[i]   + glow * 255 * t));
+        od[i+1] = Math.min(255, Math.round(sd[i+1] + glow * 255 * t));
+        od[i+2] = Math.min(255, Math.round(sd[i+2] + glow * 255 * t));
+        od[i+3] = sd[i+3];
+      }
+    }
+  }
+
+  function fxPixelate(sd, od, w, h, t, p){
+    var blockSize = Math.max(2, Math.floor(p * 40 * t) + 2);
+    for(var by = 0; by < h; by += blockSize){
+      for(var bx = 0; bx < w; bx += blockSize){
+        var tr = 0, tg = 0, tb = 0, count = 0;
+        var endY = Math.min(by + blockSize, h);
+        var endX = Math.min(bx + blockSize, w);
+        for(var y = by; y < endY; y++){
+          for(var x = bx; x < endX; x++){
+            var i = (y * w + x) * 4;
+            tr += sd[i]; tg += sd[i+1]; tb += sd[i+2];
+            count++;
+          }
+        }
+        var ar = Math.round(tr / count);
+        var ag = Math.round(tg / count);
+        var ab = Math.round(tb / count);
+        for(var y = by; y < endY; y++){
+          for(var x = bx; x < endX; x++){
+            var i = (y * w + x) * 4;
+            od[i]   = Math.round(ar * t + sd[i] * (1 - t));
+            od[i+1] = Math.round(ag * t + sd[i+1] * (1 - t));
+            od[i+2] = Math.round(ab * t + sd[i+2] * (1 - t));
+            od[i+3] = sd[i+3];
+          }
+        }
+      }
+    }
+  }
+
+  /* ── EVENT HANDLERS ── */
+
+  function handleFile(e){
+    var files = e.target.files || (e.dataTransfer && e.dataTransfer.files);
+    if(files && files[0]) loadImage(files[0]);
+  }
+
+  fileInputMain.addEventListener('change', handleFile);
+  fileInputSidebar.addEventListener('change', handleFile);
+
+  document.getElementById('btnChooseImage').addEventListener('click', function(e){
+    e.stopPropagation();
+    fileInputMain.click();
+  });
+
+  document.getElementById('btnSampleImage').addEventListener('click', function(e){
+    e.stopPropagation();
+    generateSampleImage();
+  });
+
+  var canvasArea = document.getElementById('canvasArea');
+  canvasArea.addEventListener('dragover', function(e){
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+  canvasArea.addEventListener('dragleave', function(){
+    dropZone.classList.remove('dragover');
+  });
+  canvasArea.addEventListener('drop', function(e){
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if(e.dataTransfer.files[0]) loadImage(e.dataTransfer.files[0]);
+  });
+
+  /* ── AI EFFECTS via backend ── */
+  var API_BASE = 'http://localhost:8000';
+  var aiOverlay = document.getElementById('aiOverlay');
+  var aiOverlayLabel = document.getElementById('aiOverlayLabel');
+
+  var AI_LABELS = {
+    'remove-bg':  'Removing background…',
+    'upscale':    'Upscaling 2×…',
+    'vhs-retro':  'Applying VHS…',
+    'oil-paint':  'Painting…',
+    'watercolor': 'Watercolor wash…',
+    'colorize':   'Colorizing…',
+    'cartoon':    'Cartoonizing…',
+    'make-retro': 'Applying film retro…',
+    'blur-faces': 'Detecting faces…',
+  };
+
+  function runAiEffect(effectId, btn){
+    if(!originalImg){ showToast('Load an image first'); return; }
+    aiOverlayLabel.textContent = AI_LABELS[effectId] || 'Processing…';
+    aiOverlay.classList.add('active');
+    btn.disabled = true;
+
+    previewCanvas.toBlob(function(blob){
+      var form = new FormData();
+      form.append('file', new File([blob], 'canvas.png', {type:'image/png'}));
+
+      fetch(API_BASE + '/api/process/' + effectId, {method:'POST', body:form})
+        .then(function(r){
+          if(!r.ok) return r.json().then(function(d){ throw new Error(d.detail || r.statusText); }).catch(function(){ throw new Error(r.statusText); });
+          return r.blob();
+        })
+        .then(function(resultBlob){
+          var url = URL.createObjectURL(resultBlob);
+          var img = new Image();
+          img.onload = function(){
+            /* Replace the originalImg with the AI result so all client-side
+               effects now work on top of it */
+            originalImg = img;
+            imgW = img.width;
+            imgH = img.height;
+            hiddenCanvas.width = imgW;
+            hiddenCanvas.height = imgH;
+            hCtx.drawImage(img, 0, 0);
+            originalData = hCtx.getImageData(0, 0, imgW, imgH);
+            previewCanvas.width = imgW;
+            previewCanvas.height = imgH;
+            imgDims.textContent = imgW + ' × ' + imgH + ' px';
+            exportRes.textContent = imgW + ' × ' + imgH;
+            bbDims.textContent = imgW + ' × ' + imgH;
+            aiOverlay.classList.remove('active');
+            btn.disabled = false;
+            /* Switch back to a regular client-side effect so sliders work */
+            fxCategories.querySelectorAll('.fx-btn').forEach(function(b){ b.classList.remove('active'); });
+            btn.classList.add('active');
+            applyEffect();
+            showToast('AI effect applied ✓');
+            URL.revokeObjectURL(url);
+          };
+          img.src = url;
+        })
+        .catch(function(err){
+          aiOverlay.classList.remove('active');
+          btn.disabled = false;
+          showToast('AI error: ' + err.message);
+        });
+    }, 'image/png');
+  }
+
+  fxCategories.addEventListener('click', function(e){
+    var btn = e.target.closest('.fx-btn');
+    if(!btn) return;
+    var fx = btn.dataset.fx;
+
+    /* Route AI effects to backend */
+    if(fx && fx.startsWith('ai:')){
+      var effectId = fx.slice(3);
+      fxCategories.querySelectorAll('.fx-btn').forEach(function(b){b.classList.remove('active')});
+      btn.classList.add('active');
+      runAiEffect(effectId, btn);
+      return;
+    }
+
+    fxCategories.querySelectorAll('.fx-btn').forEach(function(b){b.classList.remove('active')});
+    btn.classList.add('active');
+    currentFx = fx;
+    var cfg = paramConfig[currentFx];
+    param1Name.textContent = cfg.name;
+    param1 = cfg.def;
+    param1Slider.value = cfg.def;
+    param1Val.textContent = cfg.def;
+    var parentCat = btn.closest('.fx-category');
+    if(parentCat) parentCat.classList.remove('collapsed');
+    applyEffect();
+  });
+
+  document.querySelectorAll('.fx-category__header').forEach(function(header){
+    header.addEventListener('click', function(e){
+      e.stopPropagation();
+      header.parentElement.classList.toggle('collapsed');
+    });
+  });
+
+  var fxSearchInput = document.getElementById('fxSearch');
+  var fxSearchCount = document.getElementById('fxSearchCount');
+  fxSearchInput.addEventListener('input', function(){
+    var q = this.value.trim().toLowerCase();
+    var allBtns = fxCategories.querySelectorAll('.fx-btn');
+    var cats = fxCategories.querySelectorAll('.fx-category');
+    var matchCount = 0;
+    if(!q){
+      allBtns.forEach(function(b){b.classList.remove('fx-hidden')});
+      cats.forEach(function(c){c.classList.remove('fx-hidden')});
+      fxSearchCount.textContent = '';
+      return;
+    }
+    cats.forEach(function(cat){
+      var grid = cat.querySelector('.fx-category__grid');
+      var btns = grid.querySelectorAll('.fx-btn');
+      var catHasMatch = false;
+      btns.forEach(function(btn){
+        var match = btn.textContent.toLowerCase().indexOf(q) !== -1;
+        btn.classList.toggle('fx-hidden', !match);
+        if(match){catHasMatch=true;matchCount++;}
+      });
+      cat.classList.toggle('fx-hidden', !catHasMatch);
+      if(catHasMatch) cat.classList.remove('collapsed');
+    });
+    fxSearchCount.textContent = matchCount + ' of 30 effects';
+  });
+
+  intensitySlider.addEventListener('input', function(){
+    intensity = parseInt(this.value);
+    intensityVal.textContent = intensity;
+    applyEffect();
+  });
+
+  param1Slider.addEventListener('input', function(){
+    param1 = parseInt(this.value);
+    param1Val.textContent = param1;
+    applyEffect();
+  });
+
+  document.querySelectorAll('.preset-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.preset-btn').forEach(function(b){b.classList.remove('active')});
+      btn.classList.add('active');
+      var preset = btn.dataset.preset;
+      if(preset === 'subtle'){
+        intensity = 25; param1 = 15;
+      } else if(preset === 'medium'){
+        intensity = 50; param1 = paramConfig[currentFx].def;
+      } else if(preset === 'heavy'){
+        intensity = 90; param1 = 75;
+      } else if(preset === 'random'){
+        intensity = Math.floor(Math.random() * 80) + 20;
+        param1 = Math.floor(Math.random() * 80) + 10;
+      }
+      intensitySlider.value = intensity;
+      intensityVal.textContent = intensity;
+      param1Slider.value = param1;
+      param1Val.textContent = param1;
+      applyEffect();
+    });
+  });
+
+  btnToggle.addEventListener('click', function(){
+    if(!originalImg) return;
+    showingOriginal = !showingOriginal;
+    btnToggle.textContent = showingOriginal ? 'Show Effect' : 'Show Original';
+    if(showingOriginal){
+      ctx.putImageData(originalData, 0, 0);
+    } else {
+      applyEffect();
+    }
+  });
+
+  function exportImage(){
+    if(!originalImg) return;
+    var expCanvas = document.createElement('canvas');
+    expCanvas.width = imgW;
+    expCanvas.height = imgH;
+    var expCtx = expCanvas.getContext('2d', {willReadFrequently: true});
+    var out = expCtx.createImageData(imgW, imgH);
+    var sd = originalData.data, od = out.data;
+    var t = intensity / 100;
+    var p = param1 / 100;
+    switch(currentFx){
+      case 'brightness': fxBrightness(sd, od, imgW, imgH, t, p); break;
+      case 'contrast': fxContrast(sd, od, imgW, imgH, t, p); break;
+      case 'grain': fxGrain(sd, od, imgW, imgH, t, p); break;
+      case 'pixelate': fxPixelate(sd, od, imgW, imgH, t, p); break;
+      case 'duotone': fxDuotone(sd, od, imgW, imgH, t, p); break;
+      case 'halftone': fxHalftone(sd, od, imgW, imgH, t, p); break;
+      case 'dither': fxDither(sd, od, imgW, imgH, t, p); break;
+      case 'ascii': fxAscii(sd, od, imgW, imgH, t, p); break;
+      case 'posterize': fxPosterize(sd, od, imgW, imgH, t, p); break;
+      case 'rgbShift': fxRgbShift(sd, od, imgW, imgH, t, p); break;
+      case 'vhs': fxVhs(sd, od, imgW, imgH, t, p); break;
+      case 'crt': fxCrt(sd, od, imgW, imgH, t, p); break;
+      case 'pixelSort': fxPixelSort(sd, od, imgW, imgH, t, p); break;
+      case 'liquidGlass': fxLiquidGlass(sd, od, imgW, imgH, t, p); break;
+      case 'prismGlass': fxPrismGlass(sd, od, imgW, imgH, t, p); break;
+      case 'dataGhost': fxDataGhost(sd, od, imgW, imgH, t, p); break;
+      case 'heatSignal': fxHeatSignal(sd, od, imgW, imgH, t, p); break;
+      case 'glitch': fxGlitch(sd, od, imgW, imgH, t, p); break;
+      case 'scanLines': fxScanLines(sd, od, imgW, imgH, t, p); break;
+      case 'hologram': fxHologram(sd, od, imgW, imgH, t, p); break;
+      case 'chromAb': fxChromAb(sd, od, imgW, imgH, t, p); break;
+      case 'vignette': fxVignette(sd, od, imgW, imgH, t, p); break;
+      case 'emboss': fxEmboss(sd, od, imgW, imgH, t, p); break;
+      case 'edgeDetect': fxEdgeDetect(sd, od, imgW, imgH, t, p); break;
+      case 'bloom': fxBloom(sd, od, imgW, imgH, t, p); break;
+      case 'infrared': fxInfrared(sd, od, imgW, imgH, t, p); break;
+      case 'noiseWash': fxNoiseWash(sd, od, imgW, imgH, t, p); break;
+      case 'mirrorGlitch': fxMirrorGlitch(sd, od, imgW, imgH, t, p); break;
+      case 'tiltShift': fxTiltShift(sd, od, imgW, imgH, t, p); break;
+      case 'negativeSpace': fxNegativeSpace(sd, od, imgW, imgH, t, p); break;
+    }
+    expCtx.putImageData(out, 0, 0);
+    var link = document.createElement('a');
+    var baseName = imgFileName.replace(/\.[^.]+$/, '');
+    link.download = baseName + '-' + currentFx + '.png';
+    link.href = expCanvas.toDataURL('image/png');
+    link.click();
+    showToast('Exported successfully');
+  }
+
+  btnExport.addEventListener('click', exportImage);
+  btnExportTop.addEventListener('click', exportImage);
+
+  /* ── SAVE TO PROJECTS ── */
+  var btnSaveProject = document.getElementById('btnSaveProject');
+  btnReset.addEventListener('click', function(){
+    intensity = 50;
+    param1 = paramConfig[currentFx].def;
+    intensitySlider.value = intensity;
+    intensityVal.textContent = intensity;
+    param1Slider.value = param1;
+    param1Val.textContent = param1;
+    document.querySelectorAll('.preset-btn').forEach(function(b){b.classList.remove('active')});
+    document.querySelector('[data-preset="medium"]').classList.add('active');
+    showingOriginal = false;
+    btnToggle.textContent = 'Show Original';
+    applyEffect();
+  });
+
+  btnRemoveImg.addEventListener('click', removeImage);
+
+  toggleSidebar.addEventListener('click', function(){
+    sidebar.classList.toggle('open');
+  });
+
+  document.getElementById('sidebarBackdrop').addEventListener('click', function(){
+    sidebar.classList.remove('open');
+  });
+
+  document.addEventListener('paste', function(e){
+    var items = e.clipboardData && e.clipboardData.items;
+    if(!items) return;
+    for(var i = 0; i < items.length; i++){
+      if(items[i].type.match(/image/)){
+        var file = items[i].getAsFile();
+        if(file) loadImage(file);
+        break;
+      }
+    }
+  });
+
+  /* ── HELP DROPDOWN ── */
+  var btnHelp = document.getElementById('btnHelp');
+  var helpDropdown = document.getElementById('helpDropdown');
+
+  btnHelp.addEventListener('click', function(e){
+    e.stopPropagation();
+    var open = helpDropdown.classList.toggle('open');
+    btnHelp.setAttribute('aria-expanded', open);
+  });
+
+  document.addEventListener('click', function(){
+    helpDropdown.classList.remove('open');
+    btnHelp.setAttribute('aria-expanded', 'false');
+  });
+
+  /* ── ONBOARDING TOUR ── */
+  var tourOverlay = document.getElementById('tourOverlay');
+  var tourWelcome = document.getElementById('tourWelcome');
+  var tourHighlight = document.getElementById('tourHighlight');
+  var tourTooltip = document.getElementById('tourTooltip');
+  var tourBackdropEl = document.getElementById('tourBackdrop');
+  var currentStep = -1;
+
+  var tourSteps = [
+    {
+      target: '#dropZone',
+      fallback: '#canvasArea',
+      title: 'Start with an image',
+      desc: 'Drop a JPG, PNG, or WEBP here, or choose one from your device.',
+      pos: 'right'
+    },
+    {
+      target: '#fxCategories',
+      title: 'Choose your look',
+      desc: 'Explore signature effects like Data Ghost, Heat Signal, Fragment Poster, and more.',
+      pos: 'left',
+      openSidebar: true
+    },
+    {
+      target: '#adjustSection',
+      title: 'Make it yours',
+      desc: 'Fine-tune intensity, distortion, grain, color, and other settings for the selected effect.',
+      pos: 'left',
+      openSidebar: true
+    },
+    {
+      target: '#canvasArea',
+      title: 'See every change instantly',
+      desc: 'Your edits update directly on the canvas while you experiment.',
+      pos: 'bottom'
+    },
+    {
+      target: '#btnToggle',
+      fallback: '#canvasWrap',
+      title: 'Compare the transformation',
+      desc: 'Switch between the original and edited image to see exactly what changed.',
+      pos: 'top'
+    },
+    {
+      target: '#exportSection',
+      title: 'Take it with you',
+      desc: 'Export the finished artwork as a full-resolution PNG when you\'re happy with the result.',
+      pos: 'left',
+      openSidebar: true
+    }
+  ];
+
+  function startTour(){
+    tourOverlay.classList.add('active');
+    tourOverlay.setAttribute('aria-hidden', 'false');
+    tourWelcome.classList.add('active');
+    tourTooltip.style.display = 'none';
+    tourHighlight.style.display = 'none';
+    tourBackdropEl.style.display = 'block';
+    currentStep = -1;
+    tourWelcome.querySelector('.tour-welcome__start').focus();
+  }
+
+  function endTour(){
+    tourOverlay.classList.remove('active');
+    tourOverlay.setAttribute('aria-hidden', 'true');
+    tourWelcome.classList.remove('active');
+    tourTooltip.style.display = 'none';
+    tourHighlight.style.display = 'none';
+    try { localStorage.setItem('ghostframe_tour_done', 'true'); } catch(e){}
+    document.getElementById('canvasArea').focus();
+  }
+
+  function goToStep(idx){
+    if(idx < 0 || idx >= tourSteps.length){
+      endTour();
+      showToast('Tour complete — start creating!');
+      return;
+    }
+    currentStep = idx;
+    tourWelcome.classList.remove('active');
+    tourTooltip.style.display = 'block';
+    tourHighlight.style.display = 'block';
+
+    var step = tourSteps[idx];
+
+    if(step.openSidebar && window.innerWidth <= 860){
+      sidebar.classList.add('open');
+    }
+
+    var targetEl = document.querySelector(step.target);
+    if(!targetEl || targetEl.offsetParent === null){
+      targetEl = step.fallback ? document.querySelector(step.fallback) : null;
+    }
+    if(!targetEl) targetEl = document.getElementById('canvasArea');
+
+    var rect = targetEl.getBoundingClientRect();
+    var pad = 8;
+
+    tourHighlight.style.top = (rect.top - pad) + 'px';
+    tourHighlight.style.left = (rect.left - pad) + 'px';
+    tourHighlight.style.width = (rect.width + pad * 2) + 'px';
+    tourHighlight.style.height = (rect.height + pad * 2) + 'px';
+
+    document.getElementById('tourStepNum').textContent = (idx + 1) + ' of ' + tourSteps.length;
+    document.getElementById('tourStepTitle').textContent = step.title;
+    document.getElementById('tourStepDesc').textContent = step.desc;
+
+    document.getElementById('tourBack').style.display = idx === 0 ? 'none' : '';
+
+    var isLast = idx === tourSteps.length - 1;
+    document.getElementById('tourNext').textContent = isLast ? 'Start Creating' : 'Next';
+
+    positionTooltip(rect, step.pos);
+    document.getElementById('tourNext').focus();
+  }
+
+  function positionTooltip(targetRect, preferred){
+    var tt = tourTooltip;
+    var ttW = 320;
+    var ttH = tt.offsetHeight || 200;
+    var gap = 16;
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    var pos = preferred;
+
+    if(vw <= 480){
+      tt.style.top = 'auto';
+      tt.style.left = '0';
+      tt.style.right = '0';
+      tt.style.bottom = '0';
+      tt.style.width = '100%';
+      return;
+    }
+
+    tt.style.width = ttW + 'px';
+    tt.style.bottom = 'auto';
+    tt.style.right = 'auto';
+
+    var top, left;
+
+    if(pos === 'right'){
+      top = targetRect.top;
+      left = targetRect.right + gap;
+      if(left + ttW > vw) { pos = 'left'; }
+    }
+    if(pos === 'left'){
+      top = targetRect.top;
+      left = targetRect.left - ttW - gap;
+      if(left < 0) { left = 16; }
+    }
+    if(pos === 'bottom'){
+      top = targetRect.bottom + gap;
+      left = targetRect.left + targetRect.width / 2 - ttW / 2;
+    }
+    if(pos === 'top'){
+      top = targetRect.top - ttH - gap;
+      left = targetRect.left + targetRect.width / 2 - ttW / 2;
+      if(top < 60) { top = targetRect.bottom + gap; }
+    }
+
+    if(left < 16) left = 16;
+    if(left + ttW > vw - 16) left = vw - ttW - 16;
+    if(top < 60) top = 60;
+    if(top + ttH > vh - 16) top = vh - ttH - 16;
+
+    tt.style.top = top + 'px';
+    tt.style.left = left + 'px';
+  }
+
+  document.getElementById('tourStart').addEventListener('click', function(){ goToStep(0); });
+  document.getElementById('tourWelcomeSkip').addEventListener('click', endTour);
+  document.getElementById('tourWelcomeClose').addEventListener('click', endTour);
+  document.getElementById('tourNext').addEventListener('click', function(){ goToStep(currentStep + 1); });
+  document.getElementById('tourBack').addEventListener('click', function(){ goToStep(currentStep - 1); });
+  document.getElementById('tourSkip').addEventListener('click', endTour);
+  tourBackdropEl.addEventListener('click', endTour);
+
+  document.getElementById('btnReplayTour').addEventListener('click', function(){
+    helpDropdown.classList.remove('open');
+    btnHelp.setAttribute('aria-expanded', 'false');
+    startTour();
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(!tourOverlay.classList.contains('active')) return;
+    if(e.key === 'Escape'){
+      endTour();
+      e.preventDefault();
+    }
+    if(e.key === 'ArrowRight' && currentStep >= 0){
+      goToStep(currentStep + 1);
+      e.preventDefault();
+    }
+    if(e.key === 'ArrowLeft' && currentStep > 0){
+      goToStep(currentStep - 1);
+      e.preventDefault();
+    }
+  });
+
+  // Auto-start tour on first visit
+  setTimeout(function(){
+    var done = false;
+    try { done = localStorage.getItem('ghostframe_tour_done') === 'true'; } catch(e){}
+    if(!done) startTour();
+  }, 600);
+
+  /* ── SAVE TO PROJECTS HANDLER ── */
+  if(btnSaveProject){
+    btnSaveProject.addEventListener('click', async function(){
+      var sess = null;
+      try { sess = JSON.parse(localStorage.getItem('sb-session')); } catch(e){}
+      if(!sess || !sess.access_token){ window.location.href = 'login.html'; return; }
+      var canvas = document.getElementById('previewCanvas');
+      if(!canvas || canvas.width === 0){ showToast('Load an image first'); return; }
+      btnSaveProject.disabled = true;
+      btnSaveProject.textContent = 'Saving…';
+      canvas.toBlob(async function(blob){
+        try {
+          /* Set session so Supabase client uses the user's JWT */
+          await _sbClient.auth.setSession({
+            access_token: sess.access_token,
+            refresh_token: sess.refresh_token || ''
+          });
+          var uid = (sess.user && sess.user.id) || 'anon';
+          var fileName = uid + '/' + Date.now() + '.png';
+
+          /* Upload image to Supabase Storage */
+          var { error: uploadErr } = await _sbClient.storage
+            .from('results')
+            .upload(fileName, blob, { contentType: 'image/png', upsert: false });
+          if(uploadErr) throw new Error(uploadErr.message);
+
+          /* Get public URL */
+          var { data: urlData } = _sbClient.storage.from('results').getPublicUrl(fileName);
+          var result_url = urlData.publicUrl;
+
+          /* Insert project row */
+          var title = (document.getElementById('fileName') || {}).textContent || 'Untitled';
+          var { error: dbErr } = await _sbClient.from('projects').insert({
+            user_id: uid,
+            title: title,
+            effect_used: currentFx || null,
+            result_url: result_url
+          });
+          if(dbErr) throw new Error(dbErr.message);
+
+          showToast('Saved to Projects!');
+          setTimeout(function(){ window.location.href = 'projects.html'; }, 1200);
+        } catch(e){
+          showToast('Save failed: ' + e.message);
+        } finally {
+          btnSaveProject.disabled = false;
+          btnSaveProject.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2h10v10H2zM5 2v4h4V2M4 9h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg> Save';
+        }
+      }, 'image/png');
+    });
+  }
+
+})();
+
+// ── Sign-in modal ───────────────────────────────────────────────────────────
+(function(){
+  var modal = document.getElementById('signInModal');
+  if(!modal) return;
+  document.getElementById('signInModalClose').addEventListener('click', function(){
+    modal.classList.remove('active');
+  });
+  modal.addEventListener('click', function(e){
+    if(e.target === modal) modal.classList.remove('active');
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') modal.classList.remove('active');
+  });
+})();
+</script>
+
+<!-- Sign-in required modal -->
+<div class="tour-welcome" id="signInModal" role="dialog" aria-label="Sign in to save">
+  <button class="tour-welcome__close" id="signInModalClose" type="button" aria-label="Close">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </button>
+  <div class="tour-welcome__logo">
+    <svg viewBox="0 0 32 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20.6547 0.293C26.7599 0.293 31.7092 5.272 31.7092 11.415V23.708C29.1385 23.708 27.0547 21.611 27.0547 19.025V11.415C27.0547 7.859 24.1893 4.976 20.6547 4.976H17.6285C16.0855 4.976 14.6054 5.593 13.5143 6.69L5.62738 14.626C5.19097 15.065 4.9456 15.66 4.94556 16.281V16.683C4.94556 17.976 5.98754 19.025 7.27283 19.025H17.7456C17.7456 21.53 15.79 23.576 13.3308 23.701L13.091 23.708H7.27283C3.41689 23.708 0.291016 20.563 0.291016 16.683V16.281C0.291052 14.418 1.02659 12.632 2.3359 11.314L10.2234 3.379C12.1874 1.403 14.851 0.293 17.6285 0.293H20.6547Z" fill="white"/>
+      <path d="M21.818 7.316C23.4246 7.316 24.7271 8.627 24.7271 10.243V23.707C22.1564 23.707 20.0725 21.61 20.0725 19.024V12H18.1271L14.3246 15.825C13.779 16.374 13.0391 16.682 12.2676 16.682H7.55035C7.30675 16.682 7.18474 16.386 7.35702 16.213L15.3475 8.174C15.893 7.625 16.6328 7.316 17.4044 7.316H21.818Z" fill="white"/>
+    </svg>
+    <span class="tour-welcome__logo-text">Ghost Frame</span>
+  </div>
+  <h2 class="tour-welcome__title">Sign in to Save</h2>
+  <p class="tour-welcome__desc">Downloading is always free — but saving to your projects library requires a free account.</p>
+  <a class="tour-welcome__start" href="login.html#signup" style="display:block;text-decoration:none;text-align:center;line-height:48px;margin-bottom:0">Create Free Account</a>
+  <a class="tour-welcome__skip" href="login.html" style="display:block;text-decoration:none;margin-top:10px;text-align:center">Already have an account? Sign In</a>
+</div>
+</body>
+</html>

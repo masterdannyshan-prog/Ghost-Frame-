@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghost Frame — Discover</title>
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:100%;min-height:100%;
+  overflow-x:hidden;
+  background:#000;
+  color-scheme:dark;
+  font-family:'Syne',Arial,sans-serif;
+  color:#F8F5F0;
+}
+
+/* ── HEADER ── */
+.header{
+  position:fixed;
+  top:0;left:0;right:0;
+  height:64px;
+  display:flex;
+  align-items:center;
+  padding:0 clamp(20px,4vw,80px);
+  background:rgba(0,0,0,.85);
+  backdrop-filter:blur(14px) saturate(120%);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  z-index:100;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  text-decoration:none;
+  flex-shrink:0;
+  gap:10px;
+  color:#fff;
+}
+.brand svg{width:28px;height:21px}
+.brand-text{
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:-.3px;
+  color:#F8F5F0;
+}
+
+.nav{
+  display:flex;
+  align-items:center;
+  margin-left:clamp(28px,3vw,48px);
+  gap:clamp(24px,2.5vw,40px);
+}
+.nav a{
+  font-size:15px;
+  font-weight:400;
+  letter-spacing:-.3px;
+  color:rgba(248,245,240,.55);
+  text-decoration:none;
+  transition:color .2s;
+}
+.nav a:hover{color:rgba(248,245,240,.85)}
+.nav a.active{color:#fff}
+.nav a.active::after{
+  content:'';
+  display:block;
+  width:100%;height:2px;
+  background:#fff;
+  border-radius:1px;
+  margin-top:4px;
+}
+
+.header-right{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.btn-signup{
+  height:38px;
+  padding:0 20px;
+  border-radius:7px;
+  background:#fff;
+  color:#101010;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:-.2px;
+  border:none;
+  cursor:pointer;
+}
+
+.menu-toggle{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  width:42px;height:42px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(13,13,13,.9);
+  backdrop-filter:blur(12px);
+  cursor:pointer;
+  margin-left:auto;
+}
+.menu-toggle svg{width:18px;height:14px}
+
+/* ── FILTERS ── */
+.filters{
+  padding:clamp(88px,12vh,120px) clamp(20px,4vw,80px) 0;
+  max-width:1280px;
+  margin:0 auto clamp(28px,4vh,48px);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.filter-btn{
+  height:36px;
+  padding:0 16px;
+  border-radius:8px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  color:rgba(248,245,240,.5);
+  font-family:'Syne',Arial,sans-serif;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all .2s;
+}
+.filter-btn:hover{
+  border-color:rgba(255,255,255,.18);
+  color:rgba(248,245,240,.8);
+}
+.filter-btn.active{
+  background:rgba(255,255,255,.1);
+  border-color:rgba(255,255,255,.2);
+  color:#F8F5F0;
+}
+.filter-spacer{flex:1}
+.sort-label{
+  font-size:12px;
+  color:rgba(248,245,240,.3);
+  letter-spacing:.04em;
+}
+
+/* ── MASONRY GALLERY ── */
+.gallery{
+  padding:0 clamp(20px,4vw,80px);
+  max-width:1280px;
+  margin:0 auto;
+  columns:3;
+  column-gap:clamp(14px,1.5vw,20px);
+}
+.gallery-item{
+  break-inside:avoid;
+  margin-bottom:clamp(14px,1.5vw,20px);
+  border-radius:14px;
+  overflow:hidden;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.06);
+  cursor:pointer;
+  transition:border-color .3s,transform .3s,box-shadow .3s;
+}
+.gallery-item:hover{
+  border-color:rgba(255,255,255,.14);
+  transform:translateY(-3px);
+  box-shadow:0 12px 40px rgba(0,0,0,.4);
+}
+.gallery-item__img{
+  width:100%;
+  display:block;
+}
+.gallery-item__footer{
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.gallery-item__user{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.gallery-item__avatar{
+  width:26px;height:26px;
+  border-radius:50%;
+  background:rgba(255,255,255,.08);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  font-weight:700;
+  color:rgba(255,255,255,.5);
+  flex-shrink:0;
+}
+.gallery-item__name{
+  font-size:13px;
+  font-weight:500;
+  color:rgba(248,245,240,.6);
+}
+.gallery-item__fx{
+  font-size:11px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:rgba(248,245,240,.25);
+  padding:3px 8px;
+  border-radius:5px;
+  background:rgba(255,255,255,.04);
+}
+.gallery-item__actions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.gallery-item__action{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  font-size:12px;
+  color:rgba(248,245,240,.3);
+  background:none;
+  border:none;
+  cursor:pointer;
+  font-family:'Syne',Arial,sans-serif;
+  transition:color .2s;
+}
+.gallery-item__action:hover{color:rgba(248,245,240,.7)}
+.gallery-item__action svg{width:14px;height:14px}
+
+/* ── LOAD MORE ── */
+.load-more{
+  display:flex;
+  justify-content:center;
+  padding:clamp(40px,6vh,72px) 20px;
+}
+.load-more__btn{
+  height:46px;
+  padding:0 32px;
+  border-radius:8px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  color:rgba(248,245,240,.6);
+  font-family:'Syne',Arial,sans-serif;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .2s;
+}
+.load-more__btn:hover{
+  border-color:rgba(255,255,255,.2);
+  color:#F8F5F0;
+}
+
+/* ── FOOTER ── */
+.site-footer{
+  margin-top:clamp(60px,10vh,120px);
+  padding:clamp(40px,6vh,64px) clamp(20px,4vw,80px) clamp(24px,3vh,40px);
+  border-top:1px solid rgba(255,255,255,.06);
+  background:#0d0d0d;
+}
+.footer-inner{
+  max-width:1280px;
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.footer-brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  text-decoration:none;
+  color:rgba(255,255,255,.5);
+}
+.footer-brand svg{width:24px;height:18px}
+.footer-brand span{
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:-.2px;
+}
+.footer-links{
+  display:flex;
+  gap:clamp(16px,2vw,32px);
+}
+.footer-links a{
+  font-size:13px;
+  color:rgba(255,255,255,.35);
+  text-decoration:none;
+  transition:color .2s;
+}
+.footer-links a:hover{color:rgba(255,255,255,.7)}
+.footer-copy{
+  font-size:12px;
+  color:rgba(255,255,255,.2);
+  letter-spacing:.04em;
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  .filters{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    padding-right:20px;
+  }
+  .filters::-webkit-scrollbar{display:none}
+  .filter-btn{flex-shrink:0}
+  .filter-spacer,.sort-label{display:none}
+}
+@media(max-width:1024px){
+  .gallery{columns:2}
+}
+@media(max-width:768px){
+  .nav{display:none}
+  .menu-toggle{display:flex}
+  .header.menu-open .nav{
+    display:flex;
+    flex-direction:column;
+    position:absolute;
+    top:64px;left:0;right:0;
+    background:rgba(5,5,5,.96);
+    backdrop-filter:blur(20px);
+    padding:20px clamp(20px,4vw,80px);
+    gap:16px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .gallery{columns:2}
+  .footer-inner{flex-direction:column;gap:20px;text-align:center}
+  .footer-links{flex-wrap:wrap;justify-content:center}
+}
+@media(max-width:480px){
+  .gallery{columns:1}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header" id="header">
+  <a href="index.html" class="brand">
+    <svg viewBox="0 0 32 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20.6547 0.293C26.7599 0.293 31.7092 5.272 31.7092 11.415V23.708C29.1385 23.708 27.0547 21.611 27.0547 19.025V11.415C27.0547 7.859 24.1893 4.976 20.6547 4.976H17.6285C16.0855 4.976 14.6054 5.593 13.5143 6.69L5.62738 14.626C5.19097 15.065 4.9456 15.66 4.94556 16.281V16.683C4.94556 17.976 5.98754 19.025 7.27283 19.025H17.7456C17.7456 21.53 15.79 23.576 13.3308 23.701L13.091 23.708H7.27283C3.41689 23.708 0.291016 20.563 0.291016 16.683V16.281C0.291052 14.418 1.02659 12.632 2.3359 11.314L10.2234 3.379C12.1874 1.403 14.851 0.293 17.6285 0.293H20.6547Z" fill="white"/>
+      <path d="M21.818 7.316C23.4246 7.316 24.7271 8.627 24.7271 10.243V23.707C22.1564 23.707 20.0725 21.61 20.0725 19.024V12H18.1271L14.3246 15.825C13.779 16.374 13.0391 16.682 12.2676 16.682H7.55035C7.30675 16.682 7.18474 16.386 7.35702 16.213L15.3475 8.174C15.893 7.625 16.6328 7.316 17.4044 7.316H21.818Z" fill="white"/>
+    </svg>
+    <span class="brand-text">Ghost Frame</span>
+  </a>
+  <nav class="nav" id="mainNav">
+    <a href="index.html">Home</a>
+    <a href="effects.html">Effects</a>
+    <a href="discover.html" class="active">Discover</a>
+    <a href="projects.html">Projects</a>
+    <a href="editor.html">Editor</a>
+  </nav>
+  <div class="header-right">
+    <button class="btn-signup" type="button">Sign Up</button>
+  </div>
+  <button class="menu-toggle" type="button" aria-label="Toggle menu" onclick="document.getElementById('header').classList.toggle('menu-open')">
+    <svg viewBox="0 0 18 14" fill="none"><rect x="0" y="0" width="18" height="2" rx="1" fill="rgba(255,255,255,.85)"/><rect x="0" y="12" width="18" height="2" rx="1" fill="rgba(255,255,255,.85)"/></svg>
+  </button>
+</header>
+
+<!-- FILTERS -->
+<div class="filters">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="glitch">Glitch</button>
+  <button class="filter-btn" data-filter="print">Print</button>
+  <button class="filter-btn" data-filter="glass">Glass</button>
+  <button class="filter-btn" data-filter="signature">Signature</button>
+  <button class="filter-btn" data-filter="basic">Basic</button>
+  <span class="filter-spacer"></span>
+  <span class="sort-label">Trending</span>
+</div>
+
+<!-- MASONRY GALLERY -->
+<div class="gallery" id="gallery">
+  <!-- populated by JS -->
+
+
+</div>
+
+<!-- LOAD MORE -->
+<div class="load-more">
+  <button class="load-more__btn" type="button">Load more creations</button>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <a href="index.html" class="footer-brand">
+      <svg viewBox="0 0 32 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20.6547 0.293C26.7599 0.293 31.7092 5.272 31.7092 11.415V23.708C29.1385 23.708 27.0547 21.611 27.0547 19.025V11.415C27.0547 7.859 24.1893 4.976 20.6547 4.976H17.6285C16.0855 4.976 14.6054 5.593 13.5143 6.69L5.62738 14.626C5.19097 15.065 4.9456 15.66 4.94556 16.281V16.683C4.94556 17.976 5.98754 19.025 7.27283 19.025H17.7456C17.7456 21.53 15.79 23.576 13.3308 23.701L13.091 23.708H7.27283C3.41689 23.708 0.291016 20.563 0.291016 16.683V16.281C0.291052 14.418 1.02659 12.632 2.3359 11.314L10.2234 3.379C12.1874 1.403 14.851 0.293 17.6285 0.293H20.6547Z" fill="rgba(255,255,255,.5)"/>
+        <path d="M21.818 7.316C23.4246 7.316 24.7271 8.627 24.7271 10.243V23.707C22.1564 23.707 20.0725 21.61 20.0725 19.024V12H18.1271L14.3246 15.825C13.779 16.374 13.0391 16.682 12.2676 16.682H7.55035C7.30675 16.682 7.18474 16.386 7.35702 16.213L15.3475 8.174C15.893 7.625 16.6328 7.316 17.4044 7.316H21.818Z" fill="rgba(255,255,255,.5)"/>
+      </svg>
+      <span>Ghost Frame</span>
+    </a>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="effects.html">Effects</a>
+      <a href="discover.html">Discover</a>
+      <a href="projects.html">Projects</a>
+      <a href="editor.html">Editor</a>
+    </div>
+    <span class="footer-copy">&copy; Ghost Frame 2026</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script type="module">
+import { discover as discoverAPI } from './js/api.js';
+
+const heartSVG = `<svg viewBox="0 0 14 14" fill="none"><path d="M7 12s-5.5-3.5-5.5-7A3.5 3.5 0 0 1 7 3.5 3.5 3.5 0 0 1 12.5 5c0 3.5-5.5 7-5.5 7z" stroke="currentColor" stroke-width="1.2"/></svg>`;
+const heartFilledSVG = `<svg viewBox="0 0 14 14" fill="currentColor"><path d="M7 12s-5.5-3.5-5.5-7A3.5 3.5 0 0 1 7 3.5 3.5 3.5 0 0 1 12.5 5c0 3.5-5.5 7-5.5 7z"/></svg>`;
+
+let currentFilter = 'all';
+let currentPage = 1;
+const PAGE_SIZE = 12;
+
+/* ── FILTER BUTTONS ── */
+const filterBtns = document.querySelectorAll('.filter-btn');
+filterBtns.forEach(function(btn){
+  btn.addEventListener('click', function(){
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.getAttribute('data-filter') || 'all';
+    currentPage = 1;
+    document.getElementById('gallery').innerHTML = '';
+    loadPosts();
+  });
+});
+
+/* ── LOAD MORE ── */
+const loadMoreBtn = document.querySelector('.load-more__btn');
+if(loadMoreBtn) loadMoreBtn.addEventListener('click', function(){
+  currentPage++;
+  loadPosts(true);
+});
+
+/* ── RENDER ITEM ── */
+function initials(name){
+  if(!name) return '?';
+  return name.split(/[\s._-]/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+}
+
+function renderItem(p){
+  const item = document.createElement('div');
+  item.className = 'gallery-item';
+  item.dataset.category = p.effect_used || 'all';
+  item.dataset.id = p.id;
+  const username = p.profiles?.username || p.profiles?.display_name || 'user';
+  const av = initials(username);
+  item.innerHTML = `
+    <img class="gallery-item__img" src="${p.image_url}" alt="${p.title}" onerror="this.style.background='#1a1a1a'">
+    <div class="gallery-item__footer">
+      <div class="gallery-item__user">
+        <div class="gallery-item__avatar">${av}</div>
+        <span class="gallery-item__name">${username}</span>
+      </div>
+      <div class="gallery-item__actions">
+        <span class="gallery-item__fx">${p.effect_used || '—'}</span>
+        <button class="gallery-item__action like-btn" type="button" data-id="${p.id}">
+          ${heartSVG}
+          <span class="like-count">${p.likes_count || 0}</span>
+        </button>
+      </div>
+    </div>`;
+  item.querySelector('.like-btn').addEventListener('click', async function(e){
+    e.stopPropagation();
+    try {
+      await discoverAPI.like(p.id);
+      const cnt = this.querySelector('.like-count');
+      cnt.textContent = parseInt(cnt.textContent||'0') + 1;
+      this.querySelector('svg').outerHTML = heartFilledSVG;
+    } catch(err){}
+  });
+  return item;
+}
+
+/* ── LOAD POSTS ── */
+async function loadPosts(append = false){
+  const gallery = document.getElementById('gallery');
+  if(!append){
+    gallery.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:rgba(255,255,255,.3);font-size:14px;">Loading…</div>';
+  }
+  try {
+    const params = { page: currentPage, limit: PAGE_SIZE };
+    if(currentFilter !== 'all') params.effect = currentFilter;
+    const data = await discoverAPI.list(params);
+    const posts = Array.isArray(data) ? data : (data?.posts || data?.items || data?.data || []);
+    if(!append) gallery.innerHTML = '';
+    if(!posts.length && !append){
+      gallery.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:rgba(255,255,255,.35);font-size:14px;">No creations yet. Be the first to share one.</div>`;
+      if(loadMoreBtn) loadMoreBtn.style.display='none';
+      return;
+    }
+    posts.forEach(p => gallery.appendChild(renderItem(p)));
+    if(loadMoreBtn) loadMoreBtn.style.display = posts.length < PAGE_SIZE ? 'none' : '';
+  } catch(err){
+    if(!append) gallery.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:rgba(255,80,80,.6);font-size:14px;">Could not load feed: ${err.message}</div>`;
+  }
+}
+
+loadPosts();
+
+/* Close mobile nav on outside click */
+(function(){
+  var header=document.getElementById('header');
+  document.addEventListener('click',function(e){
+    if(header.classList.contains('menu-open')&&!header.contains(e.target)){
+      header.classList.remove('menu-open');
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

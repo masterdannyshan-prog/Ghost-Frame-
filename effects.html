@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghost Frame — Effects & Presets</title>
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:100%;min-height:100%;
+  overflow-x:hidden;
+  background:#000;
+  color-scheme:dark;
+  font-family:'Syne',Arial,sans-serif;
+  color:#F8F5F0;
+}
+
+/* ── HEADER ── */
+.header{
+  position:fixed;
+  top:0;left:0;right:0;
+  height:64px;
+  display:flex;
+  align-items:center;
+  padding:0 clamp(20px,4vw,80px);
+  background:rgba(0,0,0,.85);
+  backdrop-filter:blur(14px) saturate(120%);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  z-index:100;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  text-decoration:none;
+  flex-shrink:0;
+  gap:10px;
+  color:#fff;
+}
+.brand svg{width:28px;height:21px}
+.brand-text{
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:-.3px;
+  color:#F8F5F0;
+}
+
+.nav{
+  display:flex;
+  align-items:center;
+  margin-left:clamp(28px,3vw,48px);
+  gap:clamp(24px,2.5vw,40px);
+}
+.nav a{
+  font-size:15px;
+  font-weight:400;
+  letter-spacing:-.3px;
+  color:rgba(248,245,240,.55);
+  text-decoration:none;
+  transition:color .2s;
+}
+.nav a:hover{color:rgba(248,245,240,.85)}
+.nav a.active{color:#fff}
+.nav a.active::after{
+  content:'';
+  display:block;
+  width:100%;height:2px;
+  background:#fff;
+  border-radius:1px;
+  margin-top:4px;
+}
+
+.header-right{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.btn-signup{
+  height:38px;
+  padding:0 20px;
+  border-radius:7px;
+  background:#fff;
+  color:#101010;
+  font-family:'Syne',Arial,sans-serif;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:-.2px;
+  border:none;
+  cursor:pointer;
+}
+
+.menu-toggle{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  width:42px;height:42px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(13,13,13,.9);
+  backdrop-filter:blur(12px);
+  cursor:pointer;
+  margin-left:auto;
+}
+.menu-toggle svg{width:18px;height:14px}
+
+/* ── CATEGORY SECTIONS ── */
+.fx-section:first-of-type{
+  padding-top:clamp(100px,14vh,140px);
+}
+.fx-section{
+  padding:clamp(40px,6vh,80px) clamp(20px,4vw,80px);
+  max-width:1280px;
+  margin:0 auto;
+}
+.fx-section + .fx-section{
+  border-top:1px solid rgba(255,255,255,.06);
+}
+
+.fx-section__header{
+  display:flex;
+  align-items:baseline;
+  gap:16px;
+  margin-bottom:clamp(28px,4vh,48px);
+}
+.fx-section__title{
+  font-size:clamp(24px,2.5vw,36px);
+  font-weight:700;
+  letter-spacing:-.02em;
+  color:#F8F5F0;
+}
+.fx-section__count{
+  font-size:13px;
+  font-weight:600;
+  color:rgba(248,245,240,.25);
+  letter-spacing:.04em;
+}
+
+/* ── EFFECT CARDS ── */
+.fx-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:clamp(16px,2vw,24px);
+}
+
+.fx-card{
+  position:relative;
+  border-radius:16px;
+  overflow:hidden;
+  background:rgba(255,255,255,.02);
+  border:1px solid rgba(255,255,255,.15);
+  cursor:pointer;
+  transition:border-color .3s,transform .3s,box-shadow .3s;
+}
+.fx-card:hover{
+  border-color:rgba(255,255,255,.14);
+  transform:translateY(-4px);
+  box-shadow:0 16px 48px rgba(0,0,0,.4);
+}
+
+/* ── BLINDS REVEAL CARD ── */
+.fx-card--blinds{
+  position:relative;
+  aspect-ratio:6/5;
+}
+.blinds__img{
+  position:absolute;
+  inset:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  z-index:0;
+}
+.blinds{
+  position:absolute;
+  inset:0;
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  z-index:1;
+  pointer-events:none;
+}
+.blinds__strip{
+  background:#0a0a0a;
+  transform-origin:top;
+  transform:scaleY(1);
+  transition:transform 550ms cubic-bezier(.4,0,.2,1) calc((5 - var(--i,0)) * 45ms);
+}
+.blinds__content{
+  position:relative;
+  z-index:2;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  padding:clamp(16px,2vw,22px);
+  text-shadow:0 1px 6px rgba(0,0,0,.6);
+}
+.blinds__title{
+  font-size:clamp(15px,1.3vw,18px);
+  font-weight:700;
+  letter-spacing:-.02em;
+  color:#F8F5F0;
+}
+.blinds__sub{
+  font-size:clamp(11px,1vw,13px);
+  font-weight:400;
+  color:rgba(248,245,240,.55);
+  margin-top:4px;
+  line-height:1.35;
+}
+.blinds__btn{
+  align-self:flex-end;
+  width:34px;height:34px;
+  border-radius:50%;
+  background:#fff;
+  border:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+  cursor:pointer;
+  flex-shrink:0;
+  transition:opacity 150ms ease,transform .2s;
+}
+.blinds__btn:hover{transform:scale(1.08)}
+.blinds__btn svg{width:15px;height:15px;color:#101010}
+
+/* Open */
+.fx-card--blinds:hover .blinds__strip,
+.fx-card--blinds:focus-within .blinds__strip,
+.fx-card--blinds.revealed .blinds__strip{
+  transform:scaleY(0);
+  transition-delay:calc(var(--i,0) * 45ms);
+}
+
+@media(prefers-reduced-motion:reduce){
+  .blinds__strip{transition:opacity 200ms ease !important;transition-delay:0ms !important}
+  .fx-card--blinds:hover .blinds__strip,
+  .fx-card--blinds:focus-within .blinds__strip,
+  .fx-card--blinds.revealed .blinds__strip{
+    opacity:0;transform:scaleY(1);transition-delay:0ms !important;
+  }
+}
+
+/* ── FOOTER ── */
+.site-footer{
+  margin-top:clamp(60px,10vh,120px);
+  padding:clamp(40px,6vh,64px) clamp(20px,4vw,80px) clamp(24px,3vh,40px);
+  border-top:1px solid rgba(255,255,255,.06);
+  background:#0d0d0d;
+}
+.footer-inner{
+  max-width:1280px;
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.footer-brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  text-decoration:none;
+  color:rgba(255,255,255,.5);
+}
+.footer-brand svg{width:24px;height:18px}
+.footer-brand span{
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:-.2px;
+}
+.footer-links{
+  display:flex;
+  gap:clamp(16px,2vw,32px);
+}
+.footer-links a{
+  font-size:13px;
+  color:rgba(255,255,255,.35);
+  text-decoration:none;
+  transition:color .2s;
+}
+.footer-links a:hover{color:rgba(255,255,255,.7)}
+.footer-copy{
+  font-size:12px;
+  color:rgba(255,255,255,.2);
+  letter-spacing:.04em;
+}
+
+/* ── TOUCH SUPPORT: auto-reveal blinds cards on touch screens ── */
+@media(hover:none){
+  .fx-card--blinds .blinds__strip{
+    transform:scaleY(0);
+  }
+  .fx-card--blinds{transform:none!important;box-shadow:none!important}
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .nav{display:none}
+  .menu-toggle{display:flex}
+  .header.menu-open .nav{
+    display:flex;
+    flex-direction:column;
+    position:absolute;
+    top:64px;left:0;right:0;
+    background:rgba(5,5,5,.96);
+    backdrop-filter:blur(20px);
+    padding:20px clamp(20px,4vw,80px);
+    gap:16px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .fx-grid{grid-template-columns:1fr 1fr}
+  .footer-inner{flex-direction:column;gap:20px;text-align:center}
+  .footer-links{flex-wrap:wrap;justify-content:center}
+}
+@media(max-width:480px){
+  .fx-grid{grid-template-columns:1fr}
+}
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header" id="header">
+  <a href="index.html" class="brand">
+    <svg viewBox="0 0 32 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20.6547 0.293C26.7599 0.293 31.7092 5.272 31.7092 11.415V23.708C29.1385 23.708 27.0547 21.611 27.0547 19.025V11.415C27.0547 7.859 24.1893 4.976 20.6547 4.976H17.6285C16.0855 4.976 14.6054 5.593 13.5143 6.69L5.62738 14.626C5.19097 15.065 4.9456 15.66 4.94556 16.281V16.683C4.94556 17.976 5.98754 19.025 7.27283 19.025H17.7456C17.7456 21.53 15.79 23.576 13.3308 23.701L13.091 23.708H7.27283C3.41689 23.708 0.291016 20.563 0.291016 16.683V16.281C0.291052 14.418 1.02659 12.632 2.3359 11.314L10.2234 3.379C12.1874 1.403 14.851 0.293 17.6285 0.293H20.6547Z" fill="white"/>
+      <path d="M21.818 7.316C23.4246 7.316 24.7271 8.627 24.7271 10.243V23.707C22.1564 23.707 20.0725 21.61 20.0725 19.024V12H18.1271L14.3246 15.825C13.779 16.374 13.0391 16.682 12.2676 16.682H7.55035C7.30675 16.682 7.18474 16.386 7.35702 16.213L15.3475 8.174C15.893 7.625 16.6328 7.316 17.4044 7.316H21.818Z" fill="white"/>
+    </svg>
+    <span class="brand-text">Ghost Frame</span>
+  </a>
+  <nav class="nav" id="mainNav">
+    <a href="index.html">Home</a>
+    <a href="effects.html" class="active">Effects</a>
+    <a href="projects.html">Projects</a>
+    <a href="editor.html">Editor</a>
+  </nav>
+  <div class="header-right">
+    <button class="btn-signup" type="button">Sign Up</button>
+  </div>
+  <button class="menu-toggle" type="button" aria-label="Toggle menu" onclick="document.getElementById('header').classList.toggle('menu-open')">
+    <svg viewBox="0 0 18 14" fill="none"><rect x="0" y="0" width="18" height="2" rx="1" fill="rgba(255,255,255,.85)"/><rect x="0" y="12" width="18" height="2" rx="1" fill="rgba(255,255,255,.85)"/></svg>
+  </button>
+</header>
+
+<!-- BASIC -->
+<section class="fx-section">
+  <div class="fx-section__header">
+    <h2 class="fx-section__title">Basic</h2>
+    <span class="fx-section__count">6 effects</span>
+  </div>
+  <div class="fx-grid">
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=520&h=390&fit=crop&q=80" alt="Brightness effect preview">
+      <div class="blinds" aria-hidden="true">
+        <div class="blinds__strip" style="--i:0"></div>
+        <div class="blinds__strip" style="--i:1"></div>
+        <div class="blinds__strip" style="--i:2"></div>
+        <div class="blinds__strip" style="--i:3"></div>
+        <div class="blinds__strip" style="--i:4"></div>
+        <div class="blinds__strip" style="--i:5"></div>
+      </div>
+      <div class="blinds__content">
+        <div>
+          <span class="blinds__title">Brightness</span>
+          <p class="blinds__sub">Control lightness and exposure across the full tonal range.</p>
+        </div>
+        <a href="editor.html" class="blinds__btn" aria-label="Try Brightness effect">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=520&h=390&fit=crop&q=80" alt="Contrast effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Contrast</span><p class="blinds__sub">Expand or compress the tonal range around a configurable midpoint.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Contrast effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1553949345-eb786bb3f7ba?w=520&h=390&fit=crop&q=80" alt="Grain effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Grain</span><p class="blinds__sub">Add organic film-like noise for subtle texture or heavy analog grit.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Grain effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=520&h=390&fit=crop&q=80" alt="Pixelate effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Pixelate</span><p class="blinds__sub">Reduce resolution to chunky blocks from subtle mosaic to retro 8-bit.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Pixelate effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1519681393784-d120267933ba?w=520&h=390&fit=crop&q=80" alt="Duotone effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Duotone</span><p class="blinds__sub">Map shadows and highlights to two colors — deep blue to warm gold.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Duotone effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1470770903676-69b98201ea1c?w=520&h=390&fit=crop&q=80" alt="Vignette effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Vignette</span><p class="blinds__sub">Darken the edges to draw the eye inward with configurable falloff.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Vignette effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRINT / GRAPHIC -->
+<section class="fx-section">
+  <div class="fx-section__header">
+    <h2 class="fx-section__title">Print / Graphic</h2>
+    <span class="fx-section__count">6 effects</span>
+  </div>
+  <div class="fx-grid">
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1536329583941-14287ec6fc4e?w=520&h=390&fit=crop&q=80" alt="Halftone effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Halftone</span><p class="blinds__sub">Circular dot grid where dot size scales with luminance for a classic print look.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Halftone effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=520&h=390&fit=crop&q=80" alt="Dither effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Dither</span><p class="blinds__sub">Floyd-Steinberg error diffusion reduces to 1-bit with organic noise.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Dither effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1549490349-8643362247b5?w=520&h=390&fit=crop&q=80" alt="ASCII effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">ASCII</span><p class="blinds__sub">Render as brightness-mapped characters with configurable cell size.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try ASCII effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?w=520&h=390&fit=crop&q=80" alt="Posterize effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Posterize</span><p class="blinds__sub">Quantize color channels to fewer levels for bold, flat poster art.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Posterize effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1520034475321-cbe63696469a?w=520&h=390&fit=crop&q=80" alt="Emboss effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Emboss</span><p class="blinds__sub">3D relief effect using diagonal convolution with adjustable depth.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Emboss effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=520&h=390&fit=crop&q=80" alt="Edge Detect effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Edge Detect</span><p class="blinds__sub">Sobel edge detection isolates outlines — perfect for sketch-style output.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Edge Detect effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+  </div>
+</section>
+
+<!-- GLITCH / DISTORTION -->
+<section class="fx-section">
+  <div class="fx-section__header">
+    <h2 class="fx-section__title">Glitch / Distortion</h2>
+    <span class="fx-section__count">7 effects</span>
+  </div>
+  <div class="fx-grid">
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1551214012-84f95e060dee?w=520&h=390&fit=crop&q=80" alt="Glitch effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Glitch</span><p class="blinds__sub">Random block displacement with RGB splitting and scanline overlay.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Glitch effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1533628635777-112b2239b1c7?w=520&h=390&fit=crop&q=80" alt="RGB Shift effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">RGB Shift</span><p class="blinds__sub">Offset red and blue channels horizontally with adjustable displacement.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try RGB Shift effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1446776899648-aa78eefe8ed0?w=520&h=390&fit=crop&q=80" alt="VHS effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">VHS</span><p class="blinds__sub">Tracking distortion, color bleed, and row displacement — the full retro package.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try VHS effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1549490349-8643362247b5?w=520&h=390&fit=crop&q=80" alt="CRT effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">CRT</span><p class="blinds__sub">RGB sub-pixel pattern with horizontal scanlines like a vintage monitor.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try CRT effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=520&h=390&fit=crop&q=80" alt="Pixel Sort effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Pixel Sort</span><p class="blinds__sub">Sort pixel rows by luminance for the signature glitch-art drip.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Pixel Sort effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1536329583941-14287ec6fc4e?w=520&h=390&fit=crop&q=80" alt="Scan Lines effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Scan Lines</span><p class="blinds__sub">Clean horizontal darkened lines at configurable spacing — subtler than CRT.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Scan Lines effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=520&h=390&fit=crop&q=80" alt="Hologram effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Hologram</span><p class="blinds__sub">Cyan and magenta tint with scanline overlay and adjustable color wash.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Hologram effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+  </div>
+</section>
+
+<!-- GLASS -->
+<section class="fx-section">
+  <div class="fx-section__header">
+    <h2 class="fx-section__title">Glass</h2>
+    <span class="fx-section__count">4 effects</span>
+  </div>
+  <div class="fx-grid">
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=520&h=390&fit=crop&q=80" alt="Liquid Glass effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Liquid Glass</span><p class="blinds__sub">Sine-wave displacement warps pixels like viewing through water.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Liquid Glass effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1551214012-84f95e060dee?w=520&h=390&fit=crop&q=80" alt="Prism Glass effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Prism Glass</span><p class="blinds__sub">R, G, B channels sample from offset angles like a prism refraction.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Prism Glass effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1519681393784-d120267933ba?w=520&h=390&fit=crop&q=80" alt="Chromatic Aberration effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Chromatic Aberration</span><p class="blinds__sub">Edge-based color fringing — R and B channels shift outward from center.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Chromatic Aberration effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1470770903676-69b98201ea1c?w=520&h=390&fit=crop&q=80" alt="Bloom effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Bloom</span><p class="blinds__sub">Bright areas glow and bleed light outward with adjustable radius.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Bloom effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+  </div>
+</section>
+
+<!-- SIGNATURE -->
+<section class="fx-section">
+  <div class="fx-section__header">
+    <h2 class="fx-section__title">Signature</h2>
+    <span class="fx-section__count">7 effects</span>
+  </div>
+  <div class="fx-grid">
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1549490349-8643362247b5?w=520&h=390&fit=crop&q=80" alt="Data Ghost effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Data Ghost</span><p class="blinds__sub">RGB channel displacement with scanline artifacts — the effect that started it all.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Data Ghost effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1533628635777-112b2239b1c7?w=520&h=390&fit=crop&q=80" alt="Heat Signal effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Heat Signal</span><p class="blinds__sub">False-color thermal mapping through a blue → red → yellow → white gradient.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Heat Signal effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=520&h=390&fit=crop&q=80" alt="Infrared effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Infrared</span><p class="blinds__sub">Simulated infrared photography — greens glow magenta, skies darken dramatically.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Infrared effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=520&h=390&fit=crop&q=80" alt="Noise Wash effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Noise Wash</span><p class="blinds__sub">Procedural noise dissolves the image into a painterly, watercolor-like texture.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Noise Wash effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1519681393784-d120267933ba?w=520&h=390&fit=crop&q=80" alt="Mirror Glitch effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Mirror Glitch</span><p class="blinds__sub">Kaleidoscopic horizontal mirror with RGB artifacts bleeding along the seam.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Mirror Glitch effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=520&h=390&fit=crop&q=80" alt="Tilt Shift effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Tilt Shift</span><p class="blinds__sub">Selective focus with blur bands — makes any scene look like a miniature model.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Tilt Shift effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=520&h=390&fit=crop&q=80" alt="Negative Space effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Negative Space</span><p class="blinds__sub">Inverts bright areas to shadow while dark regions glow in complementary color.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Negative Space effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+  </div>
+</section>
+
+<!-- AI EFFECTS -->
+<section class="fx-section" id="aiSection">
+  <div class="fx-section__header">
+    <h2 class="fx-section__title">AI Effects</h2>
+    <span class="fx-section__count">9 effects</span>
+  </div>
+  <div class="fx-grid">
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1492633423870-43d1cd2775eb?w=520&h=390&fit=crop&q=80" alt="Remove BG effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Remove BG</span><p class="blinds__sub">AI isolates subjects from any background — products, portraits, or complex scenes.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Remove BG effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=520&h=390&fit=crop&q=80" alt="Upscale 2× effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Upscale 2×</span><p class="blinds__sub">Doubles resolution with LANCZOS sharpening for crisp, artifact-free enlargement.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Upscale 2× effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=520&h=390&fit=crop&q=80" alt="Colorize B&W effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Colorize B&amp;W</span><p class="blinds__sub">Adds realistic, natural color to monochrome photos — automatically.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Colorize B&W effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=520&h=390&fit=crop&q=80" alt="80s VHS effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">80s VHS</span><p class="blinds__sub">Chromatic bleed, scanlines, and tracking noise for a retro tape look.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try 80s VHS effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=520&h=390&fit=crop&q=80" alt="Oil Paint effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Oil Paint</span><p class="blinds__sub">Renders your photo as a thick, textured oil painting with visible brushwork.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Oil Paint effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=520&h=390&fit=crop&q=80" alt="Watercolor effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Watercolor</span><p class="blinds__sub">Soft washes and bleeding edges give your image a delicate, painted feel.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Watercolor effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1501854140801-50d01698950b?w=520&h=390&fit=crop&q=80" alt="Cartoon effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Cartoon</span><p class="blinds__sub">Quantized flat palette with bold ink outlines for a pure illustrated style.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Cartoon effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=520&h=390&fit=crop&q=80" alt="Film Retro effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Film Retro</span><p class="blinds__sub">90s grain, warm color cast, and a soft edge vignette for vintage film feel.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Film Retro effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+    <div class="fx-card fx-card--blinds">
+      <img class="blinds__img" src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=520&h=390&fit=crop&q=80" alt="Face Blur effect preview">
+      <div class="blinds" aria-hidden="true"><div class="blinds__strip" style="--i:0"></div><div class="blinds__strip" style="--i:1"></div><div class="blinds__strip" style="--i:2"></div><div class="blinds__strip" style="--i:3"></div><div class="blinds__strip" style="--i:4"></div><div class="blinds__strip" style="--i:5"></div></div>
+      <div class="blinds__content"><div><span class="blinds__title">Face Blur</span><p class="blinds__sub">Auto-detects and blurs all faces in a photo for instant privacy protection.</p></div><a href="editor.html" class="blinds__btn" aria-label="Try Face Blur effect"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8H12.5M12.5 8L8.5 4M12.5 8L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <a href="index.html" class="footer-brand">
+      <svg viewBox="0 0 32 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20.6547 0.293C26.7599 0.293 31.7092 5.272 31.7092 11.415V23.708C29.1385 23.708 27.0547 21.611 27.0547 19.025V11.415C27.0547 7.859 24.1893 4.976 20.6547 4.976H17.6285C16.0855 4.976 14.6054 5.593 13.5143 6.69L5.62738 14.626C5.19097 15.065 4.9456 15.66 4.94556 16.281V16.683C4.94556 17.976 5.98754 19.025 7.27283 19.025H17.7456C17.7456 21.53 15.79 23.576 13.3308 23.701L13.091 23.708H7.27283C3.41689 23.708 0.291016 20.563 0.291016 16.683V16.281C0.291052 14.418 1.02659 12.632 2.3359 11.314L10.2234 3.379C12.1874 1.403 14.851 0.293 17.6285 0.293H20.6547Z" fill="rgba(255,255,255,.5)"/>
+        <path d="M21.818 7.316C23.4246 7.316 24.7271 8.627 24.7271 10.243V23.707C22.1564 23.707 20.0725 21.61 20.0725 19.024V12H18.1271L14.3246 15.825C13.779 16.374 13.0391 16.682 12.2676 16.682H7.55035C7.30675 16.682 7.18474 16.386 7.35702 16.213L15.3475 8.174C15.893 7.625 16.6328 7.316 17.4044 7.316H21.818Z" fill="rgba(255,255,255,.5)"/>
+      </svg>
+      <span>Ghost Frame</span>
+    </a>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="effects.html">Effects</a>
+      <a href="projects.html">Projects</a>
+      <a href="editor.html">Editor</a>
+    </div>
+    <span class="footer-copy">&copy; Ghost Frame 2026</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var cards=document.querySelectorAll('.fx-card--blinds');
+  if(!cards.length)return;
+  var isTouch=window.matchMedia('(hover:none)').matches;
+  cards.forEach(function(card){
+    card.addEventListener('click',function(e){
+      if(isTouch&&!e.target.closest('.blinds__btn')){
+        card.classList.toggle('revealed');
+      }
+    });
+  });
+})();
+
+/* Sign Up/In header button */
+(function(){
+  var signupBtn=document.querySelector('.btn-signup');
+  if(signupBtn){
+    signupBtn.addEventListener('click',function(){
+      var token=null;
+      try{token=(JSON.parse(localStorage.getItem('sb-session')||'null')||{}).access_token||null;}catch(e){}
+      window.location.href=token?'projects.html':'login.html';
+    });
+  }
+})();
+
+/* Close mobile nav on outside click */
+(function(){
+  var header=document.getElementById('header');
+  document.addEventListener('click',function(e){
+    if(header.classList.contains('menu-open')&&!header.contains(e.target)){
+      header.classList.remove('menu-open');
+    }
+  });
+})();
+</script>
+</body>
+</html>
