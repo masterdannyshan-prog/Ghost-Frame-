@@ -2512,62 +2512,263 @@ var _sbClient = supabase.createClient(
     'blur-faces': 'Detecting faces…',
   };
 
+  /* ── Canvas-based AI effect implementations (no backend needed) ── */
+  var AI_FX = {
+    'upscale': function(sd, od, w, h){ for(var i=0;i<sd.length;i++) od[i]=sd[i]; },
+    'colorize': function(sd, od, w, h){
+      for(var i=0;i<w*h*4;i+=4){
+        var l=(sd[i]*0.299+sd[i+1]*0.587+sd[i+2]*0.114)/255;
+        // dark purple (#1a0533) → warm gold (#f5c842)
+        od[i]  =Math.round(26+(245-26)*l);
+        od[i+1]=Math.round(5+(200-5)*l);
+        od[i+2]=Math.round(51+(66-51)*l);
+        od[i+3]=sd[i+3];
+      }
+    },
+    'vhs-retro': function(sd, od, w, h){
+      var shift=Math.max(1,Math.floor(w*0.012));
+      for(var y=0;y<h;y++){
+        for(var x=0;x<w;x++){
+          var i=(y*w+x)*4;
+          var rx=Math.min(w-1,x+shift), bx=Math.max(0,x-shift);
+          var ri=(y*w+rx)*4, bi=(y*w+bx)*4;
+          od[i]  =sd[ri];
+          od[i+1]=Math.min(255,sd[i+1]*1.12);
+          od[i+2]=sd[bi+2];
+          od[i+3]=sd[i+3];
+          // scanlines
+          if(y%4===0){ od[i]*=0.75; od[i+1]*=0.75; od[i+2]*=0.75; }
+          // noise
+          var n=(Math.random()-0.5)*18;
+          od[i]=Math.max(0,Math.min(255,od[i]+n));
+          od[i+1]=Math.max(0,Math.min(255,od[i+1]+n));
+          od[i+2]=Math.max(0,Math.min(255,od[i+2]+n));
+        }
+      }
+    },
+    'oil-paint': function(sd, od, w, h){
+      // Box-blur approximation × 2 passes
+      var r=3, tmp=new Uint8ClampedArray(sd.length);
+      function boxBlur(src, dst){
+        for(var y=0;y<h;y++){
+          for(var x=0;x<w;x++){
+            var R=0,G=0,B=0,A=0,cnt=0;
+            for(var dy=-r;dy<=r;dy++) for(var dx=-r;dx<=r;dx++){
+              var nx=Math.max(0,Math.min(w-1,x+dx)), ny=Math.max(0,Math.min(h-1,y+dy));
+              var j=(ny*w+nx)*4; R+=src[j]; G+=src[j+1]; B+=src[j+2]; A+=src[j+3]; cnt++;
+            }
+            var i=(y*w+x)*4;
+            dst[i]=R/cnt; dst[i+1]=G/cnt; dst[i+2]=B/cnt; dst[i+3]=A/cnt;
+          }
+        }
+      }
+      boxBlur(sd, tmp); boxBlur(tmp, od);
+      // Boost saturation + contrast
+      for(var i=0;i<od.length;i+=4){
+        var avg=(od[i]+od[i+1]+od[i+2])/3;
+        od[i]  =Math.max(0,Math.min(255,(od[i]  -avg)*1.5+avg));
+        od[i+1]=Math.max(0,Math.min(255,(od[i+1]-avg)*1.5+avg));
+        od[i+2]=Math.max(0,Math.min(255,(od[i+2]-avg)*1.5+avg));
+      }
+    },
+    'watercolor': function(sd, od, w, h){
+      var r=2, tmp=new Uint8ClampedArray(sd.length);
+      function boxBlur(src, dst){
+        for(var y=0;y<h;y++){
+          for(var x=0;x<w;x++){
+            var R=0,G=0,B=0,A=0,cnt=0;
+            for(var dy=-r;dy<=r;dy++) for(var dx=-r;dx<=r;dx++){
+              var nx=Math.max(0,Math.min(w-1,x+dx)), ny=Math.max(0,Math.min(h-1,y+dy));
+              var j=(ny*w+nx)*4; R+=src[j]; G+=src[j+1]; B+=src[j+2]; A+=src[j+3]; cnt++;
+            }
+            var i=(y*w+x)*4;
+            dst[i]=R/cnt; dst[i+1]=G/cnt; dst[i+2]=B/cnt; dst[i+3]=A/cnt;
+          }
+        }
+      }
+      boxBlur(sd, tmp); boxBlur(tmp, od);
+      for(var i=0;i<od.length;i+=4){
+        var avg=(od[i]+od[i+1]+od[i+2])/3;
+        // Slight desaturate
+        od[i]  =Math.round(od[i]  *0.85+avg*0.15);
+        od[i+1]=Math.round(od[i+1]*0.85+avg*0.15);
+        od[i+2]=Math.round(od[i+2]*0.85+avg*0.15);
+        // Brightness up + noise
+        var n=(Math.random()-0.5)*8;
+        od[i]  =Math.max(0,Math.min(255,od[i]  *1.08+n));
+        od[i+1]=Math.max(0,Math.min(255,od[i+1]*1.08+n));
+        od[i+2]=Math.max(0,Math.min(255,od[i+2]*1.08+n));
+      }
+    },
+    'cartoon': function(sd, od, w, h){
+      // Quantize colors to ~8 levels per channel
+      for(var i=0;i<w*h*4;i+=4){
+        od[i]  =Math.round(sd[i]  /32)*32;
+        od[i+1]=Math.round(sd[i+1]/32)*32;
+        od[i+2]=Math.round(sd[i+2]/32)*32;
+        od[i+3]=sd[i+3];
+      }
+      // Edge darkening via simple Sobel
+      for(var y=1;y<h-1;y++){
+        for(var x=1;x<w-1;x++){
+          var lum=function(px,py){ var j=(py*w+px)*4; return sd[j]*0.299+sd[j+1]*0.587+sd[j+2]*0.114; };
+          var gx=(-lum(x-1,y-1)-2*lum(x-1,y)-lum(x-1,y+1))+(lum(x+1,y-1)+2*lum(x+1,y)+lum(x+1,y+1));
+          var gy=(-lum(x-1,y-1)-2*lum(x,y-1)-lum(x+1,y-1))+(lum(x-1,y+1)+2*lum(x,y+1)+lum(x+1,y+1));
+          var edge=Math.min(1,Math.sqrt(gx*gx+gy*gy)/180);
+          var i=(y*w+x)*4;
+          od[i]  =Math.max(0,od[i]  *(1-edge));
+          od[i+1]=Math.max(0,od[i+1]*(1-edge));
+          od[i+2]=Math.max(0,od[i+2]*(1-edge));
+          od[i+3]=sd[i+3];
+        }
+      }
+    },
+    'make-retro': function(sd, od, w, h){
+      for(var y=0;y<h;y++){
+        for(var x=0;x<w;x++){
+          var i=(y*w+x)*4;
+          // Slight desaturate + warm cast
+          var avg=(sd[i]*0.299+sd[i+1]*0.587+sd[i+2]*0.114);
+          var r2=Math.round(sd[i]  *0.85+avg*0.15); r2=Math.min(255,r2*1.06+10);
+          var g2=Math.round(sd[i+1]*0.85+avg*0.15); g2=Math.min(255,g2*0.95);
+          var b2=Math.round(sd[i+2]*0.85+avg*0.15); b2=Math.min(255,b2*0.82);
+          // Film grain
+          var n=(Math.random()-0.5)*32;
+          r2=Math.max(0,Math.min(255,r2+n));
+          g2=Math.max(0,Math.min(255,g2+n));
+          b2=Math.max(0,Math.min(255,b2+n));
+          // Vignette
+          var nx=(x/w-0.5)*2, ny=(y/h-0.5)*2;
+          var dist=Math.sqrt(nx*nx+ny*ny);
+          var vig=Math.max(0.35,1-dist*0.5);
+          // Light leak top-left
+          var leak=(1-x/w)*(1-y/h)*22;
+          od[i]  =Math.max(0,Math.min(255,(r2+leak)*vig));
+          od[i+1]=Math.max(0,Math.min(255,(g2+leak*0.45)*vig));
+          od[i+2]=Math.max(0,Math.min(255,b2*vig));
+          od[i+3]=sd[i+3];
+        }
+      }
+    },
+    'blur-faces': null // needs ML model — backend only
+  };
+
+  function _applyAiCanvasResult(resultCanvas){
+    var url = resultCanvas.toDataURL('image/png');
+    var img = new Image();
+    img.onload = function(){
+      originalImg = img;
+      imgW = img.width; imgH = img.height;
+      hiddenCanvas.width = imgW; hiddenCanvas.height = imgH;
+      hCtx.drawImage(img, 0, 0);
+      originalData = hCtx.getImageData(0, 0, imgW, imgH);
+      previewCanvas.width = imgW; previewCanvas.height = imgH;
+      imgDims.textContent = imgW + ' × ' + imgH + ' px';
+      exportRes.textContent = imgW + ' × ' + imgH;
+      if(typeof bbDims !== 'undefined') bbDims.textContent = imgW + ' × ' + imgH;
+      aiOverlay.classList.remove('active');
+      fxCategories.querySelectorAll('.fx-btn').forEach(function(b){ b.classList.remove('active'); });
+      applyEffect();
+      showToast('Effect applied ✓');
+    };
+    img.src = url;
+  }
+
   function runAiEffect(effectId, btn){
     if(!originalImg){ showToast('Load an image first'); return; }
     aiOverlayLabel.textContent = AI_LABELS[effectId] || 'Processing…';
     aiOverlay.classList.add('active');
     btn.disabled = true;
 
-    if(!API_BASE){
-      aiOverlay.classList.remove('active');
+    // Special case: upscale just resizes the canvas 2×
+    if(effectId === 'upscale'){
+      var oc = document.createElement('canvas');
+      oc.width = imgW*2; oc.height = imgH*2;
+      var octx = oc.getContext('2d');
+      octx.imageSmoothingEnabled = true;
+      octx.imageSmoothingQuality = 'high';
+      octx.drawImage(originalImg, 0, 0, oc.width, oc.height);
       btn.disabled = false;
-      showToast('AI effects need a backend server — coming soon!');
+      _applyAiCanvasResult(oc);
       return;
     }
-    previewCanvas.toBlob(function(blob){
-      var form = new FormData();
-      form.append('file', new File([blob], 'canvas.png', {type:'image/png'}));
 
-      fetch(API_BASE + '/api/process/' + effectId, {method:'POST', body:form})
-        .then(function(r){
-          if(!r.ok) return r.json().then(function(d){ throw new Error(d.detail || r.statusText); }).catch(function(){ throw new Error(r.statusText); });
-          return r.blob();
-        })
-        .then(function(resultBlob){
-          var url = URL.createObjectURL(resultBlob);
-          var img = new Image();
-          img.onload = function(){
-            /* Replace the originalImg with the AI result so all client-side
-               effects now work on top of it */
-            originalImg = img;
-            imgW = img.width;
-            imgH = img.height;
-            hiddenCanvas.width = imgW;
-            hiddenCanvas.height = imgH;
-            hCtx.drawImage(img, 0, 0);
-            originalData = hCtx.getImageData(0, 0, imgW, imgH);
-            previewCanvas.width = imgW;
-            previewCanvas.height = imgH;
-            imgDims.textContent = imgW + ' × ' + imgH + ' px';
-            exportRes.textContent = imgW + ' × ' + imgH;
-            bbDims.textContent = imgW + ' × ' + imgH;
+    // Special case: remove-bg uses @imgly/background-removal (browser ML)
+    if(effectId === 'remove-bg'){
+      previewCanvas.toBlob(function(blob){
+        import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/browser.mjs')
+          .then(function(mod){
+            aiOverlayLabel.textContent = 'Removing background… (first run downloads ~50MB model)';
+            return mod.removeBackground(blob, {
+              model: 'small',
+              output: { format: 'image/png' }
+            });
+          })
+          .then(function(resultBlob){
+            var url = URL.createObjectURL(resultBlob);
+            var img = new Image();
+            img.onload = function(){
+              originalImg = img;
+              imgW = img.width; imgH = img.height;
+              hiddenCanvas.width = imgW; hiddenCanvas.height = imgH;
+              hCtx.drawImage(img, 0, 0);
+              originalData = hCtx.getImageData(0, 0, imgW, imgH);
+              previewCanvas.width = imgW; previewCanvas.height = imgH;
+              imgDims.textContent = imgW + ' × ' + imgH + ' px';
+              exportRes.textContent = imgW + ' × ' + imgH;
+              if(typeof bbDims !== 'undefined') bbDims.textContent = imgW + ' × ' + imgH;
+              aiOverlay.classList.remove('active');
+              btn.disabled = false;
+              fxCategories.querySelectorAll('.fx-btn').forEach(function(b){ b.classList.remove('active'); });
+              applyEffect();
+              showToast('Background removed ✓');
+              URL.revokeObjectURL(url);
+            };
+            img.src = url;
+          })
+          .catch(function(err){
             aiOverlay.classList.remove('active');
             btn.disabled = false;
-            /* Switch back to a regular client-side effect so sliders work */
-            fxCategories.querySelectorAll('.fx-btn').forEach(function(b){ b.classList.remove('active'); });
-            btn.classList.add('active');
-            applyEffect();
-            showToast('AI effect applied ✓');
-            URL.revokeObjectURL(url);
-          };
-          img.src = url;
-        })
-        .catch(function(err){
-          aiOverlay.classList.remove('active');
-          btn.disabled = false;
-          showToast('AI error: ' + err.message);
-        });
-    }, 'image/png');
+            showToast('Remove BG failed: ' + err.message);
+          });
+      }, 'image/png');
+      return;
+    }
+
+    // blur-faces needs server-side ML
+    if(effectId === 'blur-faces'){
+      aiOverlay.classList.remove('active');
+      btn.disabled = false;
+      showToast('Face blur requires the AI backend — coming soon!');
+      return;
+    }
+
+    // All other effects: run Canvas pixel manipulation
+    var fn = AI_FX[effectId];
+    if(!fn){
+      aiOverlay.classList.remove('active');
+      btn.disabled = false;
+      showToast('Effect not implemented yet');
+      return;
+    }
+
+    setTimeout(function(){
+      try {
+        var oc = document.createElement('canvas');
+        oc.width = imgW; oc.height = imgH;
+        var octx = oc.getContext('2d');
+        var srcData = hCtx.getImageData(0, 0, imgW, imgH);
+        var dstData = octx.createImageData(imgW, imgH);
+        fn(srcData.data, dstData.data, imgW, imgH);
+        octx.putImageData(dstData, 0, 0);
+        btn.disabled = false;
+        _applyAiCanvasResult(oc);
+      } catch(e){
+        aiOverlay.classList.remove('active');
+        btn.disabled = false;
+        showToast('Effect error: ' + e.message);
+      }
+    }, 30);
   }
 
   fxCategories.addEventListener('click', function(e){
