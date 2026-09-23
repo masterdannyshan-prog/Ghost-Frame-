@@ -2693,16 +2693,15 @@ var _sbClient = supabase.createClient(
       return;
     }
 
-    // Special case: remove-bg uses @imgly/background-removal (browser ML)
+    // Special case: remove-bg via Vercel edge function → remove.bg API
     if(effectId === 'remove-bg'){
       previewCanvas.toBlob(function(blob){
-        import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/browser.mjs')
-          .then(function(mod){
-            aiOverlayLabel.textContent = 'Removing background… (first run downloads ~50MB model)';
-            return mod.removeBackground(blob, {
-              model: 'small',
-              output: { format: 'image/png' }
-            });
+        var form = new FormData();
+        form.append('image_file', new File([blob], 'image.png', {type:'image/png'}));
+        fetch('/api/remove-bg', { method: 'POST', body: form })
+          .then(function(r){
+            if(!r.ok) return r.json().then(function(d){ throw new Error(d.error || r.statusText); });
+            return r.blob();
           })
           .then(function(resultBlob){
             var url = URL.createObjectURL(resultBlob);
@@ -2729,7 +2728,7 @@ var _sbClient = supabase.createClient(
           .catch(function(err){
             aiOverlay.classList.remove('active');
             btn.disabled = false;
-            showToast('Remove BG failed: ' + err.message);
+            showToast('Remove BG: ' + err.message);
           });
       }, 'image/png');
       return;
